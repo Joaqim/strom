@@ -92,6 +92,18 @@ pkgs.writeShellApplication {
           tree=$(nix build --no-link --print-out-paths "$flake#androidPayloads.$slug")
         fi
 
+        # A fixed-output derivation may not reference store paths, and the
+        # bundle fetch is one. A recipe's build can leak them into its tree
+        # without noticing (`cp -r ./*` sweeping stdenv's env-vars file in
+        # was the measured case, deltarune), and the seeding below bypasses
+        # the check that would catch it, so the first person to hit it
+        # would be a user fetching the pinned bundle. Refuse here instead.
+        if refs=$(grep -rl --binary-files=text -F "/nix/store/" "$tree"); then
+          echo "bundle: $tree references the nix store; a fetched tree cannot:" >&2
+          echo "$refs" >&2
+          exit 1
+        fi
+
         work=$(mktemp -d)
         trap 'rm -rf "$work"' EXIT
         out="$work/$slug.tar.zst"
