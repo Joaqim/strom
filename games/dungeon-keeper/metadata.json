@@ -6,10 +6,17 @@
         "executablePath": "keeperfx.exe"
       }
     },
+    "payload": {
+      "cid": "bafybeifforqoqoa55kv73sd7hvfch6c3huunapljvn4oi2p32zqmzdplzu",
+      "format": "tar.zst",
+      "name": "dungeon-keeper.tar.zst",
+      "sha256": null,
+      "size": 400604962
+    },
     "schema": 1
   },
   "cids": [
-    "Qmez7AYzB1fAm129WEkUafvBnshvSfM5hPozpjQcZV8m3y"
+    "bafybeifforqoqoa55kv73sd7hvfch6c3huunapljvn4oi2p32zqmzdplzu"
   ],
   "description": "Dungeon Keeper (KeeperFX, via Proton and gamescope)",
   "runtime": "proton"

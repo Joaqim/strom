@@ -2,65 +2,45 @@
   self,
   lib,
   pkgs,
-  fetchurl,
   fetchIpfs,
-  p7zip,
-  unzip,
 }:
 
-let
-
-  originalData = fetchIpfs {
-    cid = "Qmez7AYzB1fAm129WEkUafvBnshvSfM5hPozpjQcZV8m3y";
-    fallbackUrl = "https://archive.org/download/msdos_Dungeon_Keeper_1997/Dungeon_Keeper_1997.zip";
-    hash = "sha256-7/DKaLonPKI6uH0a0vwesqM4d4AGIvoC2/ZPVRnFXJo=";
-    name = "dk1-original.zip";
-  };
-in
 self.lib.mkGame { inherit lib pkgs; } {
   name = "dungeon-keeper";
 
-  ipfsSources = [ originalData ];
-  src = fetchurl {
-    url = "https://github.com/dkfans/keeperfx/releases/download/v1.3.1/keeperfx_1_3_1_complete.7z";
-    hash = "sha256-j61vNUnRpp0bhpa1I0x8SuzEzDNBhwMz79GNiBzmYoo=";
-    name = "keeperfx.7z";
+  # The game tree, pinned as one reproducible tar.zst bundle: the desktop
+  # extracts it into the overlay base and the Android client into its
+  # game directory, from the same CID.
+  #
+  # Provenance. The tree is exactly what the previous archive-based build
+  # produced from two sources, unpatched (KeeperFX is itself the
+  # community engine replacement, so no crack is involved):
+  #
+  #  - KeeperFX 1.3.1 "complete" release (keeperfx_1_3_1_complete.7z from
+  #    github.com/dkfans/keeperfx/releases/download/v1.3.1/, sha256
+  #    j61vNUnRpp0bhpa1I0x8SuzEzDNBhwMz79GNiBzmYoo=), extracted verbatim
+  #    at the root: keeperfx.exe and its DLLs, fxdata/, campgns/,
+  #    creatrs/, ldata/, levels/, mods/, music/, its own data/ and
+  #    sound/ subsets, the launcher, save/ and scrshots/ placeholders.
+  #  - The original 1997 Dungeon Keeper data, archive.org's
+  #    msdos_Dungeon_Keeper_1997 item (Dungeon_Keeper_1997.zip, CID
+  #    Qmez7AYzB1fAm129WEkUafvBnshvSfM5hPozpjQcZV8m3y, fallback
+  #    https://archive.org/download/msdos_Dungeon_Keeper_1997/Dungeon_Keeper_1997.zip,
+  #    sha256 7/DKaLonPKI6uH0a0vwesqM4d4AGIvoC2/ZPVRnFXJo=). The build
+  #    took dungkeep/DATA and dungkeep/SOUND (it also looked for LDATA
+  #    and LEVELS, which this zip does not contain), recursively renamed
+  #    them to lowercase (data/, sound/) to match the layout KeeperFX
+  #    ships and expects, and copied them under the KeeperFX tree
+  #    without overwriting: any file KeeperFX already ships wins over
+  #    the original. The rest of the zip (KEEPER.EXE, DOS4GW.EXE,
+  #    KEEPER.CFG, SAVE/, cd/ disc image) was dropped.
+  src = fetchIpfs {
+    cid = "bafybeifforqoqoa55kv73sd7hvfch6c3huunapljvn4oi2p32zqmzdplzu";
+    bundle = true;
+    hash = "sha256-7emxeco4u1MTM24/UoV7hIYXenG8DRN3+PnBWZAqHAM=";
+    name = "dungeon-keeper";
+    size = 400604962;
   };
-
-  nativeBuildInputs = [
-    p7zip
-    unzip
-  ];
-
-  buildScript = ''
-    mkdir -p "$out"
-    7z x $src -o"$out"
-
-    # Extract original DK data and overlay with lowercase names
-    unzip -o ${originalData} -d /tmp/dk1
-
-    copy_lower() {
-      local src="$1" dst="$2"
-      mkdir -p "$dst"
-      for f in "$src"/*; do
-        [ -e "$f" ] || continue
-        base="$(basename "$f")"
-        lower="$(echo "$base" | tr '[:upper:]' '[:lower:]')"
-        if [ -d "$f" ]; then
-          copy_lower "$f" "$dst/$lower"
-        elif [ ! -e "$dst/$lower" ]; then
-          cp "$f" "$dst/$lower"
-        fi
-      done
-    }
-
-    for dir in DATA LDATA SOUND LEVELS; do
-      if [ -d "/tmp/dk1/dungkeep/$dir" ]; then
-        lower="$(echo "$dir" | tr '[:upper:]' '[:lower:]')"
-        copy_lower "/tmp/dk1/dungkeep/$dir" "$out/$lower"
-      fi
-    done
-  '';
 
   copyGlobs = [ ];
 
