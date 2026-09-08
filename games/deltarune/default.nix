@@ -3,57 +3,40 @@
   lib,
   pkgs,
   fetchIpfs,
-  stdenv,
 }:
 
-let
-  # LinuxRuleZ-style YAD self-extracting installer wrapping a Windows
-  # build of DELTARUNE (Toby Fox, 2018-2025, chapters 1-4). The .sh
-  # tail is an xz-compressed tarball of `arcsz` bytes; inside it the
-  # full payload tree is `DELTARUNE/game/prefix/drive_c/game/`, which
-  # contains the GameMaker runner (DELTARUNE.exe + data.win + chapter
-  # data dirs + music). The repack also ships its own bundled wine and
-  # a portable prefix under `DELTARUNE/game/{wine,prefix}/`; we discard
-  # those and let Proton + this repo's `mk-game.nix` manage the prefix
-  # ourselves so the game integrates with saveLocations + gamescope.
-  installer = fetchIpfs {
-    cid = "QmSSr7w3G9i3EidAK51sjnpGUuDEX55q2cp3FwLefQN2UV";
-    fallbackUrl = "https://archive.org/download/deltarune_20250916/DELTARUNE.sh";
-    hash = "sha256-Koq80dStkCpX+Hk058rK4VVGPvwPBU7s40emZEneID0=";
-    name = "deltarune-linux.sh";
-  };
-
-  arcsz = 928825096;
-
-  gameData = stdenv.mkDerivation {
-    pname = "deltarune-data";
-    version = "0.0.0";
-
-    dontUnpack = true;
-
-    installPhase = ''
-      runHook preInstall
-      mkdir -p "$out"
-      tail -c ${toString arcsz} ${installer} | xzcat \
-        | tar -xf - --strip-components=5 \
-            'DELTARUNE/game/prefix/drive_c/game'
-      cp -r ./* "$out"/
-      runHook postInstall
-    '';
-
-    dontStrip = true;
-  };
-in
 self.lib.mkGame { inherit lib pkgs; } {
   name = "deltarune";
 
-  ipfsSources = [ installer ];
-  src = gameData;
-
-  buildScript = ''
-    mkdir -p "$out"
-    cp -r "$src"/. "$out"/
-  '';
+  # The game tree, pinned as one reproducible tar.zst bundle: the desktop
+  # extracts it into the overlay base and the Android client into its
+  # game directory, from the same CID.
+  #
+  # Provenance. DELTARUNE (Toby Fox, 2018-2025, chapters 1-4), the
+  # Windows GameMaker build as the LinuxRuleZ YAD self-extracting
+  # installer DELTARUNE.sh on archive.org's deltarune_20250916 item
+  # wraps it (CID QmSSr7w3G9i3EidAK51sjnpGUuDEX55q2cp3FwLefQN2UV,
+  # https://archive.org/download/deltarune_20250916/DELTARUNE.sh,
+  # sha256-Koq80dStkCpX+Hk058rK4VVGPvwPBU7s40emZEneID0=). The .sh tail
+  # is an xz-compressed tarball of 928825096 bytes; the tree is exactly
+  # its `DELTARUNE/game/prefix/drive_c/game/` subtree with those five
+  # leading components stripped: the GameMaker runner (DELTARUNE.exe +
+  # data.win), the chapter data directories and the music. The repack's
+  # own bundled wine and its portable prefix under
+  # `DELTARUNE/game/{wine,prefix}/` are left out so Proton and this
+  # repo's `mk-game.nix` manage the prefix and the game integrates with
+  # saveLocations + gamescope. No file is patched or replaced. The one
+  # difference from the old recipe's build output: its `cp -r ./*` also
+  # swept stdenv's `env-vars` (build debris full of store paths, which a
+  # fixed-output fetch of the tree rejects) into the root; the bundle
+  # omits that file.
+  src = fetchIpfs {
+    cid = "bafybeifbvwpqdjwg2o5d5quxcjxswwwckjxyht3mivpqlllkwebwcnza4a";
+    bundle = true;
+    hash = "sha256-xZCN2M+f95VmfRek2UTSPGEZ32O7H4PH8F5CCvTeje4=";
+    name = "deltarune";
+    size = 391822613;
+  };
 
   runtime = "proton";
   executable = "DELTARUNE.exe";

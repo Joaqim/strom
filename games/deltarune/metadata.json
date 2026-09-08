@@ -6,10 +6,17 @@
         "executablePath": "DELTARUNE.exe"
       }
     },
+    "payload": {
+      "cid": "bafybeifbvwpqdjwg2o5d5quxcjxswwwckjxyht3mivpqlllkwebwcnza4a",
+      "format": "tar.zst",
+      "name": "deltarune.tar.zst",
+      "sha256": null,
+      "size": 391822613
+    },
     "schema": 1
   },
   "cids": [
-    "QmSSr7w3G9i3EidAK51sjnpGUuDEX55q2cp3FwLefQN2UV"
+    "bafybeifbvwpqdjwg2o5d5quxcjxswwwckjxyht3mivpqlllkwebwcnza4a"
   ],
   "description": "DELTARUNE (Toby Fox 2018-2025, chapters 1-4, GameMaker / Windows via Proton; LinuxRuleZ repack)",
   "runtime": "proton"
