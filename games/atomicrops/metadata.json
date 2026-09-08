@@ -6,10 +6,17 @@
         "executablePath": "Atomicrops.exe"
       }
     },
+    "payload": {
+      "cid": "bafybeid2jcswo3po2rdfkb5tvvugjrthqdesvcld2kgd75xfkb6p7kfcyq",
+      "format": "tar.zst",
+      "name": "atomicrops.tar.zst",
+      "sha256": null,
+      "size": 282003693
+    },
     "schema": 1
   },
   "cids": [
-    "QmYCBXRWtbgkSbRqsivK12M6MZi8GwnD5omJii2mkwxA97"
+    "bafybeid2jcswo3po2rdfkb5tvvugjrthqdesvcld2kgd75xfkb6p7kfcyq"
   ],
   "description": "Atomicrops (Bird Bath Games 2020, Unity action-roguelite farming shooter, GOG via Proton)",
   "runtime": "proton"
