@@ -3,35 +3,33 @@
   lib,
   pkgs,
   fetchIpfs,
-  unar,
 }:
 
-let
-  src = fetchIpfs {
-    cid = "QmSKfKZbygBUXXknED9vQUpaY4yjApjHMqTXq4cwtDD9xQ";
-    fallbackUrl = "https://archive.org/download/environmental-sa-v-02.06.2020/Environmental%20SA%20%5Bv02.06.2020%5D.rar";
-    hash = "sha256-TJa8urBX+ha2gITpXI2OzPVSlidT+0kcxhk6P7mgjpA=";
-    name = "environmental-station-alpha-2020-06-02.rar";
-  };
-in
 self.lib.mkGame { inherit lib pkgs; } {
   name = "environmental-station-alpha";
 
-  ipfsSources = [ src ];
-
-  inherit src;
-
-  nativeBuildInputs = [ unar ];
-
-  # Archive contains: Environmental Station Alpha [v02.06.2020]/
-  #   Environmental SA [20-06-20]/  ← actual game (GameMaker Studio,
-  #     Environmental Station Alpha.exe + Data/)
-  #   _Redist/  (vcredist installers — skip, Proton handles deps)
-  buildScript = ''
-    mkdir -p "$out"
-    unar -o "$TMPDIR" "$src"
-    cp -r "$TMPDIR/Environmental Station Alpha [v02.06.2020]/Environmental SA [20-06-20]"/. "$out"/
-  '';
+  # The game tree, pinned as one reproducible tar.zst bundle: the desktop
+  # extracts it into the overlay base and the Android client into its
+  # game directory, from the same CID.
+  #
+  # Provenance. Hempuli's 2015 Environmental Station Alpha, the 2020-06-02
+  # build as archive.org's environmental-sa-v-02.06.2020 item preserves it
+  # ("Environmental SA [v02.06.2020].rar", CID
+  # QmSKfKZbygBUXXknED9vQUpaY4yjApjHMqTXq4cwtDD9xQ, fallback
+  # https://archive.org/download/environmental-sa-v-02.06.2020/Environmental%20SA%20%5Bv02.06.2020%5D.rar).
+  # The RAR holds "Environmental Station Alpha [v02.06.2020]/" with two
+  # subdirectories: "Environmental SA [20-06-20]/", the actual game
+  # (Environmental Station Alpha.exe plus Data/), and "_Redist/", the
+  # vcredist installers. The tree is that game subdirectory folded to the
+  # root, verbatim and unpatched; _Redist/ is dropped since Proton
+  # supplies the runtime.
+  src = fetchIpfs {
+    cid = "bafybeififv4nvehim7fr43bnzmzyurn2h5kheiwmlg4vkg3h76jhccvwzu";
+    bundle = true;
+    hash = "sha256-XoTQChCkosQlDVzAJrOmx0Tuwdp3Q/8Fe5KMsU3yAsE=";
+    name = "environmental-station-alpha";
+    size = 85879245;
+  };
 
   runtime = "proton";
   executable = "Environmental Station Alpha.exe";

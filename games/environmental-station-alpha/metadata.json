@@ -6,10 +6,17 @@
         "executablePath": "Environmental Station Alpha.exe"
       }
     },
+    "payload": {
+      "cid": "bafybeififv4nvehim7fr43bnzmzyurn2h5kheiwmlg4vkg3h76jhccvwzu",
+      "format": "tar.zst",
+      "name": "environmental-station-alpha.tar.zst",
+      "sha256": null,
+      "size": 85879245
+    },
     "schema": 1
   },
   "cids": [
-    "QmSKfKZbygBUXXknED9vQUpaY4yjApjHMqTXq4cwtDD9xQ"
+    "bafybeififv4nvehim7fr43bnzmzyurn2h5kheiwmlg4vkg3h76jhccvwzu"
   ],
   "description": "Environmental Station Alpha (Hempuli, 2015, GameMaker Studio, via Proton)",
   "runtime": "proton"
