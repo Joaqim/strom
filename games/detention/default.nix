@@ -3,39 +3,32 @@
   lib,
   pkgs,
   fetchIpfs,
-  p7zip,
-  unar,
 }:
 
 self.lib.mkGame { inherit lib pkgs; } {
   name = "detention";
 
-  # Detention (Red Candle Games 2017). The archive.org item ships a
-  # Windows .iso wrapper; inside is a single setup_Detention.exe which
-  # is a RAR self-extracting archive (despite the "setup_*" name -- not
-  # Inno). unar handles the RAR SFX directly. Result: Detention/
-  # subtree at the archive root with Detention.exe + Unity Mono runtime
-  # + Detention_Data/.
+  # The installed game, pinned as one reproducible tar.zst bundle: the
+  # desktop extracts it into the overlay base and the Android client into
+  # its game directory, from the same CID.
+  #
+  # Provenance. Detention (Red Candle Games 2017), Unity Mono / Windows
+  # build. Origin is archive.org's detention-x32-x64 item, Detention.iso
+  # (CID QmTJWi1w8iBVv9jpecNCTeFJ5Lou7W4JM4ubJve5XnxVKY, fallback
+  # https://archive.org/download/detention-x32-x64/Detention.iso). The
+  # iso is only a wrapper: besides cover/trailer fluff (dropped) it holds
+  # a single setup_Detention.exe, which despite the "setup_*" name is a
+  # RAR self-extracting archive, not Inno; unar unpacks it to a
+  # Detention/ directory. The tree is exactly that Detention/ subtree
+  # folded to the root: Detention.exe, the Unity Mono runtime and
+  # Detention_Data/. Nothing is patched or replaced.
   src = fetchIpfs {
-    cid = "QmTJWi1w8iBVv9jpecNCTeFJ5Lou7W4JM4ubJve5XnxVKY";
-    fallbackUrl = "https://archive.org/download/detention-x32-x64/Detention.iso";
-    hash = "sha256-TP0KZXbY07AkOgdxmZX4I9hSCudLk1/bk/f28H4sV50=";
-    name = "Detention.iso";
+    cid = "bafybeigcq4wwnsgvfwvrw45npcbydilwv3tf5k6v63lhq3lo2xp577wjey";
+    bundle = true;
+    hash = "sha256-ABvU5E2WGwZmBwbjhA9KExQjCRNN9tZ8Q7XR899W8e8=";
+    name = "detention";
+    size = 664399956;
   };
-
-  nativeBuildInputs = [
-    p7zip
-    unar
-  ];
-
-  buildScript = ''
-    mkdir -p "$out"
-    # Pull just the setup_Detention.exe out of the iso (the rest is
-    # cover/trailer fluff).
-    7z x "$src" setup_Detention.exe -o"$TMPDIR/iso" > /dev/null
-    unar -o "$TMPDIR/extract" "$TMPDIR/iso/setup_Detention.exe"
-    cp -r "$TMPDIR/extract/Detention"/. "$out"/
-  '';
 
   runtime = "proton";
   executable = "Detention.exe";
