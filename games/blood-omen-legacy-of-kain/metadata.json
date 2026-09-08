@@ -6,10 +6,17 @@
         "executablePath": "Kain.exe"
       }
     },
+    "payload": {
+      "cid": "bafybeiewk3f2jefhvu52g3wsfcwlk5gjbmbzibfr5ojhjnjdkcjtvkeulu",
+      "format": "tar.zst",
+      "name": "blood-omen-legacy-of-kain.tar.zst",
+      "sha256": null,
+      "size": 481788662
+    },
     "schema": 1
   },
   "cids": [
-    "QmUB18G41smnpTJUE3sb3YjZstM1kxB9BU2V8X3ChtDNKk"
+    "bafybeiewk3f2jefhvu52g3wsfcwlk5gjbmbzibfr5ojhjnjdkcjtvkeulu"
   ],
   "description": "Blood Omen: Legacy of Kain (Silicon Knights / Crystal Dynamics 1996, GOG, via Proton)",
   "developers": [
