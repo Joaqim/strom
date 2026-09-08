@@ -6,10 +6,17 @@
         "executablePath": "AOE2-CON/age2_x1/age2_x1.5.exe"
       }
     },
+    "payload": {
+      "cid": "bafybeia6kh4oueoblcbeqiaqcornghc4tmchvlxx5molckorwj5l7ceylm",
+      "format": "tar.zst",
+      "name": "age-of-empires-ii-the-conquerors.tar.zst",
+      "sha256": null,
+      "size": 343521129
+    },
     "schema": 1
   },
   "cids": [
-    "Qmaty9puM8eHXB1qmdHYF7G9dBJNVr6ezV99w5iuNADPxY"
+    "bafybeia6kh4oueoblcbeqiaqcornghc4tmchvlxx5molckorwj5l7ceylm"
   ],
   "description": "Age of Empires II: The Conquerors (Classic, via Proton and gamescope)",
   "developers": [

@@ -4,7 +4,6 @@
   pkgs,
   fetchIpfs,
   fetchurl,
-  unzip,
   cabextract,
   pkgsi686Linux,
 }:
@@ -52,50 +51,40 @@ in
 self.lib.mkGame { inherit lib pkgs; } {
   name = "age-of-empires-ii-the-conquerors";
 
+  # The game tree, pinned as one reproducible tar.zst bundle: the desktop
+  # extracts it into the overlay base and the Android client into its
+  # game directory, from the same CID.
+  #
+  # Provenance. The tree is exactly what the old buildScript produced
+  # from archive.org's aoe-2-con item, AOE2-CON.zip (CID
+  # Qmaty9puM8eHXB1qmdHYF7G9dBJNVr6ezV99w5iuNADPxY, fallback
+  # https://archive.org/download/aoe-2-con/AOE2-CON.zip, sha256
+  # V/IRivuCKy8HUPLIc/n2S9jgsY3vbo5jh6y1wZhbamY=): the zip unpacked as is,
+  # top-level AOE2-CON/ kept, with two changes over it.
+  #
+  #  - Third-party hooks the release ships next to age2_x1.5.exe were
+  #    deleted from AOE2-CON/age2_x1/: cnc-ddraw (ddraw.dll, ddraw.ini,
+  #    "cnc-ddraw config.exe", Shaders/) because it fails to find a
+  #    DirectDraw device under gamescope, and IPXWrapper (wsock32.dll,
+  #    mswsock.dll, dpwsockx.dll, dplayerx.dll, ipxwrapper.dll,
+  #    ipxconfig.exe) plus the loose clokspl.exe, Greetz.exe and
+  #    spectate.exe. The networking shims MUST stay out: wine resolves
+  #    a DLL next to the exe before syswow64, so they would shadow the
+  #    native DirectPlay set preRun installs into the prefix (see the
+  #    directPlayNative note above). Multiplayer runs over native
+  #    DirectPlay + TCP/IP instead.
+  #  - Every AOE2-CON/Avi/*.AVI intro video (Indeo Video 5, which wine
+  #    cannot decode) was overwritten with a 0.1-second 320x240 black
+  #    stub encoded by ffmpeg as msvideo1 + pcm_u8 22050 Hz mono, a
+  #    codec wine's builtin VFW handles; the game skips past them
+  #    instantly.
   src = fetchIpfs {
-    cid = "Qmaty9puM8eHXB1qmdHYF7G9dBJNVr6ezV99w5iuNADPxY";
-    fallbackUrl = "https://archive.org/download/aoe-2-con/AOE2-CON.zip";
-    hash = "sha256-V/IRivuCKy8HUPLIc/n2S9jgsY3vbo5jh6y1wZhbamY=";
-    name = "AOE2-CON.zip";
+    cid = "bafybeia6kh4oueoblcbeqiaqcornghc4tmchvlxx5molckorwj5l7ceylm";
+    bundle = true;
+    hash = "sha256-AHStTaIp/0JkEfLdW7UTgUgwavQ0dYYYSYXuayxW88M=";
+    name = "age-of-empires-ii-the-conquerors";
+    size = 343521129;
   };
-
-  nativeBuildInputs = [
-    unzip
-    pkgs.ffmpeg
-  ];
-
-  buildScript = ''
-    mkdir -p "$out"
-    unzip -q $src -d "$out"
-    # Remove third-party hooks that cause problems under Proton/Wine.
-    # cnc-ddraw: fails to find a DirectDraw device under gamescope
-    # IPXWrapper: hooks networking via loose dpwsockx/dplayerx/wsock32
-    # shims. These MUST go: wine resolves a DLL next to the exe before
-    # syswow64, so leaving them would shadow the native DirectPlay set
-    # preRun installs into the prefix (see the directPlayNative note
-    # above). Multiplayer runs over native DirectPlay + TCP/IP instead.
-    rm -f "$out/AOE2-CON/age2_x1/ddraw.dll"
-    rm -f "$out/AOE2-CON/age2_x1/ddraw.ini"
-    rm -f "$out/AOE2-CON/age2_x1/wsock32.dll"
-    rm -f "$out/AOE2-CON/age2_x1/mswsock.dll"
-    rm -f "$out/AOE2-CON/age2_x1/dpwsockx.dll"
-    rm -f "$out/AOE2-CON/age2_x1/dplayerx.dll"
-    rm -f "$out/AOE2-CON/age2_x1/ipxwrapper.dll"
-    rm -f "$out/AOE2-CON/age2_x1/clokspl.exe"
-    rm -f "$out/AOE2-CON/age2_x1/Greetz.exe"
-    rm -f "$out/AOE2-CON/age2_x1/spectate.exe"
-    rm -f "$out/AOE2-CON/age2_x1/ipxconfig.exe"
-    rm -f "$out/AOE2-CON/age2_x1/cnc-ddraw config.exe"
-    rm -rf "$out/AOE2-CON/age2_x1/Shaders"
-    # Replace intro AVI videos (Indeo Video 5, unsupported in Wine) with
-    # 0.1-second black stub AVIs using msvideo1 (built-in Wine VFW codec).
-    # Encodes in milliseconds; the game skips past them instantly.
-    for avi in "$out/AOE2-CON/Avi/"*.AVI "$out/AOE2-CON/Avi/"*.avi; do
-      [ -f "$avi" ] || continue
-      ffmpeg -f lavfi -i color=black:size=320x240:duration=0.1:rate=15 \
-        -vcodec msvideo1 -acodec pcm_u8 -ar 22050 -ac 1 -y "$avi"
-    done
-  '';
 
   runtime = "proton";
 
