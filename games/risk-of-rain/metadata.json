@@ -6,10 +6,17 @@
         "executablePath": "Risk of Rain.exe"
       }
     },
+    "payload": {
+      "cid": "bafybeiflztreidm3byvpskl3y7bybkqdboq2czi56744xpinrfhjx2l5uy",
+      "format": "tar.zst",
+      "name": "risk-of-rain.tar.zst",
+      "sha256": null,
+      "size": 70696934
+    },
     "schema": 1
   },
   "cids": [
-    "QmUiGfcZ9zbgubBA8RZCwGvMhz4drAKztWZr3eKZ9s4C3m"
+    "bafybeiflztreidm3byvpskl3y7bybkqdboq2czi56744xpinrfhjx2l5uy"
   ],
   "description": "Risk of Rain (2013 Hopoo Games, original v1.2.2 Windows build via Proton)",
   "runtime": "proton"
