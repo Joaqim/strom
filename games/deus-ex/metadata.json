@@ -7,10 +7,17 @@
         "executablePath": "System/DeusEx.exe"
       }
     },
+    "payload": {
+      "cid": "bafybeidi56b5rop235n5ubnh3fhbiykgc6dmjnvthczszjcqpgknavvjoq",
+      "format": "tar.zst",
+      "name": "deus-ex.tar.zst",
+      "sha256": null,
+      "size": 377968614
+    },
     "schema": 1
   },
   "cids": [
-    "QmYirjSSa4qwbxoBWH3Cc2g8Ywn1ZwUa3hphcmH7phq8bg"
+    "bafybeidi56b5rop235n5ubnh3fhbiykgc6dmjnvthczszjcqpgknavvjoq"
   ],
   "description": "Deus Ex GOTY (2000, GOG, via Proton)",
   "runtime": "proton"

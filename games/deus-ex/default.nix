@@ -3,60 +3,44 @@
   lib,
   pkgs,
   fetchIpfs,
-  unar,
-  innoextract,
 }:
 
-let
-  # GOG GOTY edition of Deus Ex (2000). Archive ships a rar bundling both
-  # the GOTY installer (self-contained .exe) and a separate Revision-mod
-  # installer with a .bin slice; we only need the GOTY .exe.
-  src = fetchIpfs {
-    cid = "QmYirjSSa4qwbxoBWH3Cc2g8Ywn1ZwUa3hphcmH7phq8bg";
-    fallbackUrl = "https://archive.org/download/deus-ex-goty-edition/Deus%20Ex%20-%20GOTY%20Edition.rar";
-    hash = "sha256-tVEYGrn7iYPDUJunpQ0EQFgMt352rblRSbTrTbldafg=";
-    name = "deus-ex-goty.rar";
-  };
-in
 self.lib.mkGame { inherit lib pkgs; } {
   name = "deus-ex";
 
-  inherit src;
-
-  nativeBuildInputs = [
-    unar
-    innoextract
-  ];
-
-  buildScript = ''
-    mkdir -p "$out"
-    unar -o "$TMPDIR/rar" "$src"
-    cd "$TMPDIR/rar/DeusEx" || cd "$TMPDIR/rar"/*
-    innoextract --gog -d "$TMPDIR/iss" \
-      "setup_deus_ex_goty_1.112fm(revision_1.6.1.0)_(45326).exe"
-    # innoextract drops game files at the root; app/ holds only the GOG
-    # icon, webcache.zip, and an empty Save dir we don't need.
-    cp -r "$TMPDIR/iss"/* "$out/"
-    rm -rf "$out/__redist" "$out/tmp" "$out/commonappdata" "$out/app"
-
-    # The default DeusEx.ini ships with FirstRun=0, which makes DeusEx.exe
-    # pop the hardware-detection wizard on launch. Set a version-stamped
-    # value (any non-zero engine build) so the wizard is skipped. Bump
-    # the default 640x480/16bpp to 1920x1080/32bpp. The .ini uses CRLF
-    # line endings, so the `$` anchor has to allow the trailing \r.
-    sed -i -E \
-      -e 's/^FirstRun=0\r?$/FirstRun=1100\r/' \
-      -e 's/^FullscreenViewportX=.*$/FullscreenViewportX=1920\r/' \
-      -e 's/^FullscreenViewportY=.*$/FullscreenViewportY=1080\r/' \
-      -e 's/^FullscreenColorBits=.*$/FullscreenColorBits=32\r/' \
-      -e 's/^WindowedColorBits=.*$/WindowedColorBits=32\r/' \
-      -e 's/^ColorDepth=.*$/ColorDepth=32\r/' \
-      -e 's|^GameRenderDevice=GlideDrv.GlideRenderDevice\r?$|GameRenderDevice=D3DDrv.D3DRenderDevice\r|' \
-      -e 's|^RenderDevice=GlideDrv.GlideRenderDevice\r?$|RenderDevice=D3DDrv.D3DRenderDevice\r|' \
-      -e 's|^WindowedRenderDevice=SoftDrv.SoftwareRenderDevice\r?$|WindowedRenderDevice=D3DDrv.D3DRenderDevice\r|' \
-      -e 's|^UseDirectDraw=True\r?$|UseDirectDraw=False\r|' \
-      "$out/System/DeusEx.ini"
-  '';
+  # The installed game, pinned as one reproducible tar.zst bundle: the
+  # desktop extracts it into the overlay base and the Android client into
+  # its game directory, from the same CID.
+  #
+  # Provenance. Deus Ex GOTY (2000, Ion Storm / Eidos), the GOG build
+  # 1.112fm (installer 45326), as archive.org's deus-ex-goty-edition item
+  # preserves it: a rar (CID QmYirjSSa4qwbxoBWH3Cc2g8Ywn1ZwUa3hphcmH7phq8bg,
+  # https://archive.org/download/deus-ex-goty-edition/Deus%20Ex%20-%20GOTY%20Edition.rar)
+  # bundling the self-contained GOTY installer
+  # "setup_deus_ex_goty_1.112fm(revision_1.6.1.0)_(45326).exe" and a
+  # separate Revision-mod installer with a .bin slice, which is not used.
+  # The tree is what `innoextract --gog` unpacks from that GOTY .exe:
+  # the game files at the root (System/, Maps/, Textures/, Sounds/,
+  # Music/, Help/, manual.pdf and the goggame-1207658995.* metadata),
+  # minus __redist, tmp, commonappdata and app/ (app/ holds only the GOG
+  # icon, webcache.zip and an empty Save dir). No binaries are replaced;
+  # one file is edited over that:
+  #
+  #  - System/DeusEx.ini (CRLF): FirstRun=0 -> FirstRun=1100, because
+  #    FirstRun=0 makes DeusEx.exe pop the hardware-detection wizard on
+  #    launch and any non-zero engine build number skips it.
+  #    FullscreenViewportX/Y 640x480 -> 1920x1080; FullscreenColorBits,
+  #    WindowedColorBits and ColorDepth 16 -> 32; GameRenderDevice and
+  #    RenderDevice GlideDrv.GlideRenderDevice -> D3DDrv.D3DRenderDevice,
+  #    WindowedRenderDevice SoftDrv.SoftwareRenderDevice ->
+  #    D3DDrv.D3DRenderDevice; UseDirectDraw=True -> False.
+  src = fetchIpfs {
+    cid = "bafybeidi56b5rop235n5ubnh3fhbiykgc6dmjnvthczszjcqpgknavvjoq";
+    bundle = true;
+    hash = "sha256-uCd91epz4HqzmPsNFrPwJxjz+IPQoupde+VzWXNuW84=";
+    name = "deus-ex";
+    size = 377968614;
+  };
 
   runtime = "proton";
 
