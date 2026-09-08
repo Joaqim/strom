@@ -7,10 +7,17 @@
         "executablePath": "anox.exe"
       }
     },
+    "payload": {
+      "cid": "bafybeiaqg5ksnphgovjvqiebt3jshwg5hrw7ue6ydhwblcdp3j356rsble",
+      "format": "tar.zst",
+      "name": "anachronox.tar.zst",
+      "sha256": null,
+      "size": 963648627
+    },
     "schema": 1
   },
   "cids": [
-    "Qma31wDiB337AYUrJqQmJfeuc7RoZCWDUtVdeWbQnLrojD"
+    "bafybeiaqg5ksnphgovjvqiebt3jshwg5hrw7ue6ydhwblcdp3j356rsble"
   ],
   "description": "Anachronox (Ion Storm 2001, GOG v1.02 build 22258, via Proton)",
   "runtime": "proton"
