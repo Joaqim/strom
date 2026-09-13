@@ -382,6 +382,15 @@ let
                 "/run/opengl-driver-32" = "/run/opengl-driver-32";
                 # SDL enumerates input devices via /run/udev/data.
                 "/run/udev" = "/run/udev";
+                # On a systemd-resolved host /etc/resolv.conf is a symlink
+                # to /run/systemd/resolve/stub-resolv.conf, which the curated
+                # /run does not carry, so the sandbox has NO nameserver and
+                # every online game fails with ERR_NAME_NOT_RESOLVED
+                # (measured with Chromium in games/pokemon-showdown). That
+                # directory holds only the resolver's generated resolv.conf
+                # files and its varlink query socket -- no secret, no control
+                # surface -- and is absent on hosts without resolved.
+                "/run/systemd/resolve" = "/run/systemd/resolve";
               };
 
               # /tmp/.strom-overlay (not /strom/overlay): /tmp is RW from
