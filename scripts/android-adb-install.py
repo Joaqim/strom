@@ -10,7 +10,7 @@ gets its data from a PC.
 
     scripts/android-adb-install.py <slug> [--serial S] [--launch] [--no-payload]
 
-Reads `nix build .#androidManifests.<slug>`, installs `.#apks.<slug>`,
+Reads `nix build .#androidManifests.<slug>`, installs the APK it pins (by URL and sha256, the bytes the client installs),
 pushes `.#androidPayloads.<slug>` to `/sdcard/Download/Strom/<slug>`
 (where the client would have put it), then pushes every `files` entry to
 its absolute device path. Prints the recipe's setup text with `{dir}`
@@ -18,9 +18,11 @@ filled in, because the picker step inside the port is still the player's.
 """
 
 import argparse
+import hashlib
 import json
 import subprocess
 import sys
+import urllib.request
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -50,13 +52,24 @@ def adb(
     return proc
 
 
-def apk_file(out: Path) -> Path:
-    if out.is_file():
-        return out
-    apks = sorted(out.glob("*.apk"))
-    if len(apks) != 1:
-        sys.exit(f"expected one .apk under {out}, found {len(apks)}")
-    return apks[0]
+def fetch_apk(apk: dict) -> Path:
+    """The bytes the client installs: the manifest's URL, checked against its
+    sha256. Not `.#apks.<slug>`: a game that builds its own APK (balatro's
+    balatromobile build) keeps that under `outputs.apk`, while the port the
+    `apk` backend installs is the one named here."""
+    cache = Path.home() / ".cache/strom-apk"
+    cache.mkdir(parents=True, exist_ok=True)
+    out = cache / f"{apk['appId']}-{apk['version']}.apk"
+    if not (
+        out.is_file() and hashlib.sha256(out.read_bytes()).hexdigest() == apk["sha256"]
+    ):
+        with urllib.request.urlopen(apk["url"]) as r:
+            data = r.read()
+        got = hashlib.sha256(data).hexdigest()
+        if got != apk["sha256"]:
+            sys.exit(f"{apk['url']}: sha256 {got}, manifest says {apk['sha256']}")
+        out.write_bytes(data)
+    return out
 
 
 def push_tree(serial: str | None, tree: Path, dest: str) -> int:
@@ -87,7 +100,7 @@ def main() -> None:
     app_id = apk["appId"]
 
     print(f"installing {app_id} {apk['version']}")
-    adb(a.serial, "install", "-r", str(apk_file(nix_build(f"apks.{a.slug}"))))
+    adb(a.serial, "install", "-r", str(fetch_apk(apk)))
 
     device_dir = f"{DEVICE_ROOT}/{a.slug}"
     if not a.no_payload and "payload" in manifest:
