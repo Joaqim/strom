@@ -36,6 +36,29 @@ self.lib.mkGame { inherit lib pkgs; } {
 
   saveLocations = [ "AppData/Roaming/MMFApplications" ];
 
+  # Clickteam Fusion 2 runtime (the MMFApplications save dir above is its
+  # tell): a 32-bit Direct3D 8 / DirectDraw renderer. GameNative's default
+  # dxvk has no D3D8 path, so the exe never maps a window and the launch
+  # sits on "Launching game..." forever. wined3d is what GameNative itself
+  # picks for a Steam title whose store page says DirectX <= 8.
+  android.containerConfig.dxwrapper = "wined3d";
+
+  # A Multimedia Fusion 2 game reads the keyboard only: the pad GameNative
+  # exposes as XInput/DirectInput is never read (measured on the Thor:
+  # injected key events drove the menu, the Odin pad did nothing). Its
+  # defaults, as its Settings screen lists them: arrows move, C jump,
+  # X shoot, Z and D the two abilities, Enter confirms, Escape pauses.
+  android.padKeys = {
+    leftStick = "arrows";
+    dpad = "arrows";
+    a = "C";
+    b = "X";
+    x = "Z";
+    y = "D";
+    start = "ENTER";
+    select = "ESC";
+  };
+
   gamescope = {
     output-width = 1920;
     output-height = 1080;
@@ -48,7 +71,7 @@ self.lib.mkGame { inherit lib pkgs; } {
   };
 
   meta = {
-    description = "Environmental Station Alpha (Hempuli, 2015, GameMaker Studio, via Proton)";
+    description = "Environmental Station Alpha (Hempuli, 2015, Clickteam Fusion 2, via Proton)";
     platforms = [ "x86_64-linux" ];
     mainProgram = "environmental-station-alpha";
   };

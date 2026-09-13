@@ -3,7 +3,18 @@
     "backend": "gamenative",
     "gamenative": {
       "containerConfig": {
+        "dxwrapper": "wined3d",
         "executablePath": "Environmental Station Alpha.exe"
+      },
+      "padKeys": {
+        "a": "C",
+        "b": "X",
+        "dpad": "arrows",
+        "leftStick": "arrows",
+        "select": "ESC",
+        "start": "ENTER",
+        "x": "Z",
+        "y": "D"
       }
     },
     "payload": {
@@ -18,6 +29,6 @@
   "cids": [
     "bafybeififv4nvehim7fr43bnzmzyurn2h5kheiwmlg4vkg3h76jhccvwzu"
   ],
-  "description": "Environmental Station Alpha (Hempuli, 2015, GameMaker Studio, via Proton)",
+  "description": "Environmental Station Alpha (Hempuli, 2015, Clickteam Fusion 2, via Proton)",
   "runtime": "proton"
 }
