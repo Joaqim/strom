@@ -477,50 +477,74 @@ public final class Handoff {
         boolean registers = c.getPackageManager().resolveActivity(register, 0) != null;
         // Whether GameNative answered the registration. A build that
         // answers (strom-4 on) also reports a launch it could not start;
-        // one that does not (strom-3) is launched blind, as before.
+        // one that does not (strom-3) is launched blind, on a second Play.
         boolean answers = false;
         if (registers) {
-            // On EVERY launch, never remembered. "Registered" is a fact
-            // inside GameNative -- its folder list lives in its private
-            // preferences, dies with a reinstall, and loses this entry
-            // when the player deletes the container in there -- and a
-            // record of it kept here drifted from that fact every time
+            // On EVERY launch, never remembered on disk. "Registered" is a
+            // fact inside GameNative -- its folder list lives in its
+            // private preferences, dies with a reinstall, and loses this
+            // entry when the player deletes the container in there -- and
+            // a record of it kept here drifted from that fact every time
             // (measured: a container deleted in GameNative, a marker here
             // saying registered, every Play ending in its "Game Not
             // Installed" dialog with no way out). Registering a registered
-            // folder is a no-op on GameNative's side; what it costs is a
-            // cold start of GameNative when it was not running, which the
-            // launch would have paid anyway.
-            //
-            // A launch sent into that cold start is dropped (measured: the
-            // launch parsed, "Emitting ExternalGameLaunch", no session).
-            // A build that answers says when it is safe; for one that does
-            // not, the wait is the same eight seconds as before.
+            // folder is a no-op on GameNative's side.
             register.putExtra("folder", payloadDir.getAbsolutePath());
             register.putExtra(EXTRA_REPLY_TO, c.getPackageName());
             if (profileJson != null) {
                 register.putExtra("controls_profile", profileJson);
             }
-            register.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             Reply reply = new Reply(c, pkg + ".CUSTOM_GAME_FOLDER_RESULT");
             try {
-                c.startActivity(register, onBuiltIn());
-                Intent answer = reply.await(REGISTER_WAIT_MS);
-                answers = answer != null;
-                if (answers && !answer.getBooleanExtra("registered", false)) {
-                    // Its two reasons, in its own words: no storage
-                    // permission, or nothing in the folder it takes for a
-                    // game.
-                    throw new IOException(labelFor(pkg) + " refused the folder "
-                        + payloadDir + ": it has no permission to read it, or"
-                        + " finds no game in it");
+                if (!c.getPackageManager().queryBroadcastReceivers(register, 0).isEmpty()) {
+                    // A build with the receiver (strom-4 on): registered
+                    // without a window changing hands, answered, and the
+                    // launch below goes out from the foreground. A package
+                    // in the stopped state -- freshly installed and never
+                    // opened, or force-stopped -- is skipped by broadcasts
+                    // unless asked for (measured: no answer, no receiver
+                    // log line, right after a force-stop).
+                    register.addFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
+                    c.sendBroadcast(register);
+                    Intent answer = reply.await(REGISTER_WAIT_MS);
+                    if (answer == null) {
+                        throw new IOException(labelFor(pkg) + " did not answer the"
+                            + " registration of " + payloadDir + " within "
+                            + REGISTER_WAIT_MS / 1000 + " s");
+                    }
+                    answers = true;
+                    if (!answer.getBooleanExtra("registered", false)) {
+                        // Its two reasons, in its own words: no storage
+                        // permission, or nothing in the folder it takes
+                        // for a game.
+                        throw new IOException(labelFor(pkg) + " refused the folder "
+                            + payloadDir + ": it has no permission to read it, or"
+                            + " finds no game in it");
+                    }
+                    Log.i(TAG, "registered " + payloadDir + " with " + pkg
+                        + (profileJson == null ? "" : " + controls profile"));
+                } else if (registeredBlind.add(blindKey(c, pkg, payloadDir))) {
+                    // strom-3 registers only through its activity, which
+                    // takes the screen; a launch sent after that is a
+                    // background activity start, which Android refuses
+                    // (measured three times: "callingUidHasAnyVisibleWindow:
+                    // false", once allowed and twice dropped with the same
+                    // timing). So this Play registers and stops, and the
+                    // next one launches from the foreground. Remembered
+                    // for this process only, keyed by the install of
+                    // GameNative: the next start of Strom registers again,
+                    // which is a no-op when nothing changed and the repair
+                    // when a container was deleted meanwhile.
+                    register.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    c.startActivity(register, onBuiltIn());
+                    Log.i(TAG, "registered " + payloadDir + " with " + pkg
+                        + " through its activity (no receiver: a strom-3 build)");
+                    throw new NeedsSetup("GameNative is adding this game to its"
+                        + " library. Press Play again to start it.");
                 }
             } finally {
                 reply.close();
             }
-            Log.i(TAG, "registered " + payloadDir + " with " + pkg
-                + (profileJson == null ? "" : " + controls profile")
-                + (answers ? "" : " (no answer within " + REGISTER_WAIT_MS + " ms: launching blind)"));
         }
 
         // Per GAME, since the folder to register is this game's own, and
@@ -656,6 +680,18 @@ public final class Handoff {
 
     /** The extra naming us as the package GameNative's answers go to. */
     private static final String EXTRA_REPLY_TO = "reply_to";
+    /**
+     * Folders registered through a strom-3 build's activity since this
+     * process started, each keyed to the install of GameNative it was sent
+     * to. In memory only: it exists so the second Play launches instead of
+     * registering again, and it must not outlive what it says.
+     */
+    private static final java.util.Set<String> registeredBlind =
+        java.util.Collections.synchronizedSet(new java.util.HashSet<String>());
+
+    private static String blindKey(Context c, String pkg, File payloadDir) {
+        return pkg + "@" + installedAt(c, pkg) + ":" + payloadDir.getAbsolutePath();
+    }
     /** How long a cold-started GameNative takes to reach its registration handler, measured. */
     private static final long REGISTER_WAIT_MS = 8000;
     /** A "not installed" answer follows the launch within a second; this is generous. */

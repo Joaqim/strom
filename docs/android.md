@@ -640,6 +640,29 @@ and layering is the simpler one.
 }
 ```
 
+**Registration is sent on every launch, and how depends on the build.**
+The client keeps no record of having registered a folder: that fact
+lives in GameNative's private preferences, dies with a reinstall, and
+goes away when the player deletes the container in there (measured: a
+marker here said registered, GameNative said "Game Not Installed", no
+way out). Registering a registered folder is a no-op on GameNative's
+side. A build with the `ADD_CUSTOM_GAME_FOLDER` broadcast receiver
+(strom-4 on) is sent the intent as a broadcast with a `reply_to`
+package, answers with `CUSTOM_GAME_FOLDER_RESULT`, and the launch goes
+out from the foreground right after; the same `reply_to` on
+`LAUNCH_GAME` makes a game it does not list come back as
+`LAUNCH_GAME_RESULT status=not_installed` instead of a dialog behind
+our screen. strom-3 only registers through its activity, which takes
+the screen, and Android then refuses the `LAUNCH_GAME` activity start
+as a background start (measured three times on the Thor, Android 13:
+"callingUidHasAnyVisibleWindow: false", once allowed and twice dropped
+with identical timing -- the old "register, sleep eight seconds,
+launch" was working by luck). So on strom-3 the first Play registers
+and says "press Play again", the second launches from the foreground;
+which folders this process has registered with which install of
+GameNative is held in memory only, so a restart of Strom registers
+again.
+
 `emulator` is `Box64` when absent, as `dxwrapper` is `dxvk` and
 `execArgs` is empty: the manifest omits the client's defaults.
 
