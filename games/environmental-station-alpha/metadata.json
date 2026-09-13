@@ -7,14 +7,15 @@
         "executablePath": "Environmental Station Alpha.exe"
       },
       "padKeys": {
-        "a": "C",
-        "b": "X",
+        "a": "X",
+        "b": "C",
         "dpad": "arrows",
         "leftStick": "arrows",
+        "r1": "S",
         "select": "ESC",
         "start": "ENTER",
         "x": "Z",
-        "y": "D"
+        "y": "V"
       }
     },
     "payload": {

@@ -45,19 +45,29 @@ self.lib.mkGame { inherit lib pkgs; } {
 
   # A Multimedia Fusion 2 game reads the keyboard only: the pad GameNative
   # exposes as XInput/DirectInput is never read (measured on the Thor:
-  # injected key events drove the menu, the Odin pad did nothing). Its
-  # defaults, as its Settings screen lists them: arrows move, C jump,
-  # X shoot, Z and D the two abilities, Enter confirms, Escape pauses.
+  # injected key events drove the menu, the Odin pad did nothing). The
+  # keys are the game's own defaults, as ESA_Settings.txt records them:
+  # arrows move, X jump, C shoot, Z hookshot, V dash, S map, Up uses;
+  # Enter confirms a menu, Escape pauses.
   android.padKeys = {
     leftStick = "arrows";
     dpad = "arrows";
-    a = "C";
-    b = "X";
+    a = "X";
+    b = "C";
     x = "Z";
-    y = "D";
+    y = "V";
+    r1 = "S";
     start = "ENTER";
     select = "ESC";
   };
+
+  # It opens its intro frames in a window one twelfth of the 1080p
+  # container desktop and switches to its fullscreen mode only when the
+  # intro ends (two and a half minutes, or a key press): measured on the
+  # Thor with a fresh container and its ESA_Settings.txt seeded with
+  # fullscreen=1, no different from the file the game writes itself. So
+  # nothing under android.seedFiles helps here; the setting is already
+  # its default and the window is the intro's, not a setting's.
 
   gamescope = {
     output-width = 1920;
