@@ -554,8 +554,14 @@ public class MainActivity extends Activity implements Host {
             @Override
             public void run() {
                 say(g, "deleting");
-                Fetcher.deleteTree(CoreInstaller.payloadDir(g));
-                say(g, "deleted; press Play to download it with your options");
+                java.io.File dir = CoreInstaller.payloadDir(g);
+                // The runtime's side first, while the folder still names
+                // the game: GameNative finds the container by the id file
+                // in it.
+                String forgot = Handoff.forget(MainActivity.this, g, dir);
+                Fetcher.deleteTree(dir);
+                say(g, "deleted; press Play to download it with your options"
+                    + (forgot == null ? "" : " (" + forgot + ")"));
                 ui.post(new Runnable() {
                     @Override
                     public void run() {

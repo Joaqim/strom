@@ -200,6 +200,24 @@ in
       '';
     };
 
+    seedFiles = mkOption {
+      type = types.attrsOf types.str;
+      default = { };
+      description = ''
+        Files written into the GameNative container's Windows user
+        profile (`drive_c/users/xuser/`) the first time the game's
+        container is resolved for a launch, each only where no such
+        file exists yet: path relative to the profile -> content. For
+        what a game keeps under AppData and reads at start -- its
+        display mode, its control scheme -- and which nothing outside
+        GameNative can reach otherwise. The player's later changes in
+        the game's own menus stay, since an existing file is never
+        overwritten. Needs the strom build from strom-4 on; earlier
+        builds ignore the key. Travels as `gamenative.seedFiles` and in
+        the intent's `container_config.seedFiles`.
+      '';
+    };
+
     padKeys = mkOption {
       type = types.attrsOf types.str;
       default = { };
@@ -689,6 +707,9 @@ in
             containerConfig = lib.filterAttrs (
               k: v: !(containerDefaults ? ${k}) || containerDefaults.${k} != v
             ) container;
+          }
+          // lib.optionalAttrs (game.android.seedFiles != { }) {
+            seedFiles = game.android.seedFiles;
           }
           // lib.optionalAttrs (game.android.padKeys != { }) {
             padKeys =

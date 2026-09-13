@@ -50,6 +50,8 @@ public final class Game {
      * should reach it as XInput. See {@link PadKeys}.
      */
     public java.util.Map<String, String> padKeys = Collections.emptyMap();
+    /** Files to seed into the container's user profile, path -> content; see lib/android. */
+    public java.util.Map<String, String> seedFiles = Collections.emptyMap();
 
     /**
      * The game's published player options, empty when it has none.

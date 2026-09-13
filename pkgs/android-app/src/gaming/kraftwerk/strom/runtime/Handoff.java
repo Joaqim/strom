@@ -136,6 +136,47 @@ public final class Handoff {
         return available(c, g.backend);
     }
 
+    /**
+     * Ask the runtime to drop what it built for this game: for GameNative,
+     * the container (prefix, saves, seeded files). Sent when the player
+     * deletes the download, so the next Play starts as a first install
+     * would, and the old container does not sit behind the new tree. A
+     * runtime without the intent (strom-3, stock) keeps its container;
+     * said in the return value so the reset row can tell the player.
+     *
+     * @return what was done, for the status line
+     */
+    public static String forget(Context c, Game g, File payloadDir) {
+        if (!"gamenative".equals(g.backend)) {
+            return null;
+        }
+        String pkg = installedPackage(c, g.backend);
+        if (pkg == null) {
+            return null;
+        }
+        Intent remove = new Intent(pkg + ".REMOVE_CUSTOM_GAME").setPackage(pkg)
+            .putExtra("folder", payloadDir.getAbsolutePath())
+            .putExtra(EXTRA_REPLY_TO, c.getPackageName())
+            .addFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
+        if (c.getPackageManager().queryBroadcastReceivers(remove, 0).isEmpty()) {
+            return labelFor(pkg) + " keeps its container for this game (this build"
+                + " cannot be asked to drop it)";
+        }
+        Reply reply = new Reply(c, pkg + ".CUSTOM_GAME_REMOVED");
+        try {
+            c.sendBroadcast(remove);
+            Intent answer = reply.await(REGISTER_WAIT_MS);
+            if (answer == null) {
+                return labelFor(pkg) + " did not answer; its container may remain";
+            }
+            return answer.getBooleanExtra("removed", false)
+                ? labelFor(pkg) + " dropped its container"
+                : labelFor(pkg) + " had no container for it";
+        } finally {
+            reply.close();
+        }
+    }
+
     private static String installedPackage(Context c, String backend) {
         if (backend == null) {
             return null;
@@ -632,6 +673,18 @@ public final class Handoff {
             if (profileName != null) {
                 sb.append(",\"dinputMapperType\":2");
             }
+            // Files for the container's user profile, written once where
+            // absent (strom-4 on; see lib/android's seedFiles).
+            if (!g.seedFiles.isEmpty()) {
+                sb.append(",\"seedFiles\":{");
+                boolean first = true;
+                for (java.util.Map.Entry<String, String> e : g.seedFiles.entrySet()) {
+                    sb.append(first ? "" : ",").append(jsonString(e.getKey()))
+                        .append(':').append(jsonString(e.getValue()));
+                    first = false;
+                }
+                sb.append('}');
+            }
             config = sb.append('}').toString();
             intent.putExtra("container_config", config);
         }
@@ -748,9 +801,18 @@ public final class Handoff {
         for (int i = 0; i < s.length(); i++) {
             char ch = s.charAt(i);
             if (ch == '"' || ch == '\\') {
-                sb.append('\\');
+                sb.append('\\').append(ch);
+            } else if (ch == '\n') {
+                sb.append("\\n");
+            } else if (ch == '\r') {
+                sb.append("\\r");
+            } else if (ch == '\t') {
+                sb.append("\\t");
+            } else if (ch < 0x20) {
+                sb.append(String.format("\\u%04x", (int) ch));
+            } else {
+                sb.append(ch);
             }
-            sb.append(ch);
         }
         return sb.append('"').toString();
     }

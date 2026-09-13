@@ -287,6 +287,19 @@ public final class Catalog {
     }
 
     /** The manifest omits a key when it equals the documented default. */
+    /** The string-valued entries of a JSON object; empty for anything else. */
+    private static java.util.Map<String, String> stringMap(Object o) {
+        java.util.Map<String, String> out = new java.util.LinkedHashMap<String, String>();
+        if (o instanceof java.util.Map) {
+            for (java.util.Map.Entry<?, ?> e : ((java.util.Map<?, ?>) o).entrySet()) {
+                if (e.getValue() instanceof String) {
+                    out.put(String.valueOf(e.getKey()), (String) e.getValue());
+                }
+            }
+        }
+        return out;
+    }
+
     private static String orElse(String v, String fallback) {
         return (v == null || v.isEmpty()) ? fallback : v;
     }
@@ -357,6 +370,7 @@ public final class Catalog {
             }
             g.padKeys = keys;
         }
+        g.seedFiles = stringMap(Json.path(m, "android", "gamenative", "seedFiles"));
 
         // A port that is its own app. Absent on every other backend.
         g.apkAppId = Json.str(m, "android", "apk", "appId");
