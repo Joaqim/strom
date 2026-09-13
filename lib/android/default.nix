@@ -38,6 +38,7 @@
 
 {
   lib,
+  config,
   game,
   # The parent's resolved bool/enum option schema (mk-game's
   # `settingsSchema`, published as `passthru.settingsSchema`). Passed in
@@ -131,12 +132,13 @@ in
         "apk"
         "unsupported"
       ];
-      default = backendFor.${game.runtime};
-      defaultText = lib.literalMD "derived from `runtime`";
+      default = if config.apk != null then "apk" else backendFor.${game.runtime};
+      defaultText = lib.literalMD "`apk` when `android.apk` is set, else derived from `runtime`";
       description = ''
         The Android runtime app this game is handed off to. `apk` means
-        the game ships its own Android build via `outputs.apk` and needs
-        no runtime app at all.
+        the game has its own Android build -- a third-party port fetched
+        from its release page (`android.apk`) or one this repo builds
+        (`outputs.apk`) -- and needs no runtime app at all.
       '';
     };
 
@@ -226,6 +228,77 @@ in
       '';
     };
 
+    apk = mkOption {
+      type = types.nullOr (
+        types.submodule {
+          options = {
+            url = mkOption {
+              type = types.str;
+              description = ''
+                The upstream release asset. Pinned by `sha256` so the
+                client installs the bytes this recipe was tested against,
+                not whatever the project published this morning -- same
+                rule as the runtime apps in the client's `Runtimes` table.
+              '';
+            };
+
+            sha256 = mkOption {
+              type = types.str;
+              description = "Lower-case hex sha256 of the APK at `url`.";
+            };
+
+            size = mkOption {
+              type = types.int;
+              description = "Bytes of the APK, for the download prompt.";
+            };
+
+            version = mkOption {
+              type = types.str;
+              description = "Upstream release tag, shown beside the install offer.";
+            };
+
+            files = mkOption {
+              type = types.attrsOf types.str;
+              default = { };
+              example = {
+                "baserom.gba" = "/storage/emulated/0/Android/data/dev.picori.tmc/files/baserom.gba";
+              };
+              description = ''
+                Payload path -> absolute device path the app reads it from
+                without a picker. Documentation and the adb tool's
+                (`scripts/android-adb-install.py`) copy list only: since
+                Android 11 no app can write into another app's
+                `Android/data`, so the client stages the payload under
+                `Download/Strom/games/<slug>` and relies on `setup`.
+              '';
+            };
+
+            setup = mkOption {
+              type = types.str;
+              default = "";
+              description = ''
+                What the player does inside the app, once, to point it at
+                the payload: which button, which file. `{dir}` is replaced
+                by the payload directory on the device. Shown by the client
+                at every launch until the app has been opened from Strom
+                once. Empty for an app that needs nothing.
+              '';
+            };
+          };
+        }
+      );
+      default = null;
+      description = ''
+        A self-contained third-party Android build of this game, fetched
+        from its release page. Setting it selects the `apk` backend: the
+        client fetches and installs this APK (system installer, user
+        confirms), fetches `payload` as for any other backend, and opens
+        the app by its launcher intent. `android.appId` must be the
+        upstream package id. Dual-screen ports for the AYN Thor are the
+        case this exists for (`games/the-legend-of-zelda-the-minish-cap`).
+      '';
+    };
+
     payload = mkOption {
       type = types.nullOr (
         types.submodule {
@@ -307,9 +380,12 @@ in
         let
           srcs = game.ipfsSources or [ ];
           only = builtins.head srcs;
+          # Backends whose app opens one file: an emulator its ROM, a
+          # third-party port the ROM or disc its own picker imports.
           singleFileBackends = builtins.elem game.android.backend [
             "retroarch"
             "azahar"
+            "apk"
           ];
           buildsNothing = game.buildScript == "" && builtins.length srcs == 1;
         in
@@ -427,16 +503,25 @@ in
     outputs.apk = mkOption {
       type = types.package;
       description = ''
-        The signed APK derivation. No default: only games with a real
-        self-contained Android build define this, with their own
-        packaging pipeline (see games/balatro/apk.nix for the
-        balatromobile-based LOVE2D example). Evaluating it for a game
-        that doesn't define it is an error.
+        The APK the `apk` backend installs. Defaults to the fetched
+        upstream release when `android.apk` is set; a game this repo
+        builds itself sets it explicitly with its own packaging pipeline
+        (games/balatro/apk.nix, the balatromobile-based LOVE2D example).
+        Evaluating it for a game that defines neither is an error.
       '';
     };
   };
 
   config = {
+    outputs.apk = lib.mkIf (config.apk != null) (
+      lib.mkDefault (
+        pkgs.fetchurl {
+          inherit (config.apk) url sha256;
+          name = "${game.name}-${config.apk.version}.apk";
+        }
+      )
+    );
+
     outputs.payload =
       let
         # The base is what the desktop overlay presents with no layer
@@ -612,6 +697,23 @@ in
       }
       // lib.optionalAttrs (game.android.backend == "azahar") {
         azahar.rom = game.executable;
+      }
+      // lib.optionalAttrs (game.android.backend == "apk") {
+        apk =
+          if game.android.apk == null then
+            throw "${game.name}: android.backend is \"apk\" but android.apk is not set (an APK this repo builds itself still needs its install source here)"
+          else
+            {
+              appId = game.android.appId;
+              inherit (game.android.apk)
+                url
+                sha256
+                size
+                version
+                ;
+            }
+            // lib.optionalAttrs (game.android.apk.files != { }) { inherit (game.android.apk) files; }
+            // lib.optionalAttrs (game.android.apk.setup != "") { inherit (game.android.apk) setup; };
       };
 
     outputs.manifest = pkgs.writeText "${game.name}-android.json" (
