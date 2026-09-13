@@ -16,6 +16,7 @@ import gaming.kraftwerk.strom.catalog.Game;
 import gaming.kraftwerk.strom.catalog.Layer;
 import gaming.kraftwerk.strom.catalog.Options;
 import gaming.kraftwerk.strom.catalog.Setting;
+import gaming.kraftwerk.strom.runtime.AzaharConfig;
 import gaming.kraftwerk.strom.runtime.CoreInstaller;
 import gaming.kraftwerk.strom.runtime.Handoff;
 import gaming.kraftwerk.strom.runtime.RuntimeInstaller;
@@ -45,6 +46,8 @@ public final class GameScreen extends LinearLayout implements Screen {
     private static final int KIND_PLAY = 0;
     private static final int KIND_OPTION = 1;
     private static final int KIND_RESET = 2;
+    /** Offer this client all-files access, for a screen on each panel under Azahar. */
+    private static final int KIND_GRANT = 3;
 
     private final Theme t;
     private final Host host;
@@ -249,6 +252,15 @@ public final class GameScreen extends LinearLayout implements Screen {
         for (Setting s : game.settings) {
             rows.add(new Row(KIND_OPTION, s));
         }
+        // Shown while both facts hold and gone the moment either stops: a
+        // second panel to put a screen on, and no permission to write the
+        // setting into Azahar's config. Declining is a fine outcome, so
+        // nothing prompts for it and nothing records a refusal; the row
+        // simply stays available.
+        if ("azahar".equals(game.backend) && AzaharConfig.secondDisplay(getContext())
+            && !AzaharConfig.canWrite()) {
+            rows.add(new Row(KIND_GRANT, null));
+        }
         for (Row r : rows) {
             rowBox.addView(build(r));
         }
@@ -324,6 +336,15 @@ public final class GameScreen extends LinearLayout implements Screen {
             r.value.setText("");
             r.note.setText("the only way to remove a mod layer already unpacked");
             r.live = !busy;
+            return;
+        }
+        if (r.kind == KIND_GRANT) {
+            r.label.setText("Allow all-files access for a screen on each panel");
+            r.value.setText("");
+            r.note.setText("Strom writes the two-screen setting into Azahar's own"
+                + " config, wherever you put it. Optional: without it the game"
+                + " uses Azahar's layout.");
+            r.live = true;
             return;
         }
         Setting s = r.setting;
@@ -497,6 +518,12 @@ public final class GameScreen extends LinearLayout implements Screen {
         }
         if (r.kind == KIND_RESET) {
             host.resetPayload(game);
+            return;
+        }
+        if (r.kind == KIND_GRANT) {
+            // The system's own page for it; onShown re-reads the fact when
+            // the player comes back.
+            getContext().startActivity(AzaharConfig.grantIntent(getContext()));
             return;
         }
         // Re-check rather than trusting what the row was built with: the

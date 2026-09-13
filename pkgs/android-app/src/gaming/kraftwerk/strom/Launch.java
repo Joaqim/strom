@@ -153,7 +153,7 @@ public final class Launch {
             }
 
             p.say("handing off");
-            Handoff.launch(c, g, dir);
+            Handoff.launch(c, g, dir, !have);
             return new Outcome(Result.LAUNCHED, "launched", false);
         } catch (Handoff.NeedsSetup e) {
             // An instruction, not a fault: printing the exception class in

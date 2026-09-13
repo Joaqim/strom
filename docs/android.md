@@ -1155,10 +1155,16 @@ package is present. Launch is the package's launcher intent: none of
 these ports export anything else, and their data reaches them through
 their own SAF picker. So the payload is fetched to
 `Download/Strom/<slug>` as usual and the recipe's `setup` text --
-which button, which file, `{dir}` filled in -- is shown once per install
-of the port (toast, after the app is up, so there is somewhere to do it)
-and on the Play row every time. A port with no payload at all (an online
-client) is playable on its APK alone.
+which button, which file, `{dir}` filled in -- is shown as a toast after
+the app is up (so there is somewhere to do it) whenever the port cannot
+have been pointed at the payload yet, and on the Play row every time.
+"Cannot have been" is derived, not recorded: the payload was fetched in
+this very run, or the port's `firstInstallTime` is newer than the
+payload directory's mtime (a reinstall moves it, an update does not).
+The client keeps no file saying "already told"; an earlier one did, and
+fifteen ports were uninstalled while their markers stayed, so a
+reinstall would have got no instruction. A port with no payload at all
+(an online client) is playable on its APK alone.
 
 `files` is documentation plus the adb tool's copy list
 (`scripts/android-adb-install.py <slug>`), never something the client

@@ -191,8 +191,15 @@ public final class Handoff {
     /**
      * @param payloadDir the unpacked tree in shared storage, or the payload
      *                   file itself when the game is a single ROM
+     * @param fresh      whether this run fetched the payload, so no app can
+     *                   have been pointed at it yet
      */
-    public static void launch(Context c, Game g, File payloadDir) throws IOException {
+    public static void launch(Context c, Game g, File payloadDir, boolean fresh)
+        throws IOException {
+        // Read before anything here writes beside the game (the .gamenative
+        // id, the controls profile): those would make the tree look newer
+        // than the app that has to be pointed at it.
+        Placed placed = new Placed(fresh, payloadDir.lastModified());
         // Resolved before anything looks for the backend's own app, because
         // a DS game is served by WatermelonDS under a different package. A
         // device with WatermelonDS and no RetroArch is the normal case once
@@ -202,7 +209,7 @@ public final class Handoff {
         // runtime present, so the button stayed on Play and never offered
         // to install anything.
         if (g.isApk()) {
-            launchApk(c, g, payloadDir);
+            launchApk(c, g, payloadDir, placed);
             return;
         }
         if (Runtimes.isNintendoDs(g) && installed(c, WATERMELON_PKG)) {
@@ -223,7 +230,7 @@ public final class Handoff {
             return;
         }
         if ("gamenative".equals(g.backend)) {
-            launchGameNative(c, pkg, g, payloadDir);
+            launchGameNative(c, pkg, g, payloadDir, placed);
             return;
         }
         // Dolphin is described in docs/android.md, but its decisive fact is
@@ -252,21 +259,52 @@ public final class Handoff {
      * so the payload sits where the client put it and the recipe's setup
      * text says which button to press.
      *
-     * <p>Said once per install of the port, after the app is up so the
-     * toast lands on top of it: the step is inside the port, so refusing
-     * to launch until it is done (the GameNative shape) would leave the
-     * player nowhere to do it.
+     * <p>Said after the app is up so the toast lands on top of it: the
+     * step is inside the port, so refusing to launch until it is done (the
+     * GameNative shape) would leave the player nowhere to do it. Said
+     * whenever the port cannot have been pointed at this payload yet (see
+     * {@link Placed}), not once per install: a record of having said it
+     * outlived fifteen ports that were uninstalled, and would have kept
+     * quiet through their reinstall.
      */
-    private static void launchApk(Context c, Game g, File payloadDir) throws IOException {
+    private static void launchApk(Context c, Game g, File payloadDir, Placed placed)
+        throws IOException {
         Intent i = c.getPackageManager().getLaunchIntentForPackage(g.apkAppId);
         if (i == null) {
             throw new NotInstalled(g.apkAppId + " has no launcher activity");
         }
         i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         c.startActivity(i);
-        if (g.apkSetup != null && !g.apkSetup.isEmpty()
-            && askOnce(c, g.apkAppId, g.apkAppId + "-setup")) {
+        if (g.apkSetup != null && !g.apkSetup.isEmpty() && placed.unknownTo(c, g.apkAppId)) {
             throw new NeedsSetup(g.apkSetup.replace("{dir}", payloadDir.getAbsolutePath()));
+        }
+    }
+
+    /**
+     * When the payload was put where it is, against which an app's install
+     * time says whether that app can have been pointed at it.
+     *
+     * <p>Two facts, both readable at any time: the payload directory's
+     * mtime, set when the tree was unpacked, and the app's firstInstallTime,
+     * which a reinstall moves and an update does not. An app installed after
+     * the payload was placed has never seen it; one installed before may
+     * have, and its own state is the only record -- the client keeps none.
+     * The one case the two times miss is the launch that just fetched the
+     * payload: the app was there first, but the bytes were not, so that run
+     * says so explicitly.
+     */
+    static final class Placed {
+        final boolean fresh;
+        final long at;
+
+        Placed(boolean fresh, long at) {
+            this.fresh = fresh;
+            this.at = at;
+        }
+
+        /** Whether {@code pkg} cannot have been set up for this payload. */
+        boolean unknownTo(Context c, String pkg) {
+            return fresh || installedAt(c, pkg) > at;
         }
     }
 
@@ -337,19 +375,12 @@ public final class Handoff {
                 + " on-screen overlay off. Then press Play again.");
         }
 
-        // Only on a device that has a second panel, and only once: asking
-        // for all-files access buys exactly one thing, a screen on each
-        // panel instead of both in one window, so it is asked for where
-        // that is true and skipped everywhere else. Declining is a fine
-        // outcome -- the game still runs under Azahar's own layout -- which
-        // is why this is asked once and never again.
-        if (AzaharConfig.secondDisplay(c) && !AzaharConfig.canWrite() && askOnce(c, pkg, pkg)) {
-            c.startActivity(AzaharConfig.grantIntent(c));
-            throw new NeedsSetup("For a screen on each panel, Strom needs"
-                + " all-files access: it writes the two-screen setting into"
-                + " Azahar's own config, wherever you put it. Allow it and press"
-                + " Play again, or just press Play again to use Azahar's layout.");
-        }
+        // All-files access buys exactly one thing, a screen on each panel
+        // instead of both in one window, and declining it is a fine outcome
+        // -- the game runs under Azahar's own layout. So it is not asked for
+        // here at all: the game's screen shows a row offering it while the
+        // device has a second panel and the permission is missing (both
+        // readable facts), and nothing records a refusal.
         AzaharConfig.apply(c);
         Intent intent = new Intent(Intent.ACTION_VIEW);
         intent.setComponent(new ComponentName(pkg, AZAHAR_ACTIVITY));
@@ -417,8 +448,8 @@ public final class Handoff {
      * session that started says nothing. So this reports "handed off",
      * never "running". Stock GameNative answers nothing.
      */
-    private static void launchGameNative(Context c, String pkg, Game g, File payloadDir)
-        throws IOException {
+    private static void launchGameNative(Context c, String pkg, Game g, File payloadDir,
+        Placed placed) throws IOException {
         if (!payloadDir.isDirectory()) {
             throw new IOException("payload directory " + payloadDir + " is missing");
         }
@@ -492,13 +523,13 @@ public final class Handoff {
                 + (answers ? "" : " (no answer within " + REGISTER_WAIT_MS + " ms: launching blind)"));
         }
 
-        // Asked once per GAME, not once per runtime: the folder to register
-        // is this game's own, so a second gamenative game needs its own
-        // instruction rather than silently inheriting the first one's
-        // marker and landing in GameNative's "not installed" dialog. We
-        // cannot read the answer either way -- the folder list lives in its
-        // private preferences.
-        if (!registers && askOnce(c, pkg, pkg + "-" + g.slug)) {
+        // Per GAME, since the folder to register is this game's own, and
+        // whenever this install of GameNative cannot have seen the payload
+        // (see Placed). Whether the player did it cannot be read -- the
+        // folder list lives in its private preferences -- and a launch
+        // without it ends in GameNative's own "not installed" dialog,
+        // which at least says what is wrong.
+        if (!registers && placed.unknownTo(c, pkg)) {
             // Everything the intent cannot carry, said once and in full. Each
             // of these IS in the manifest and IS computable -- they travel in
             // the same container_config that would overwrite the wine build,
@@ -873,36 +904,6 @@ public final class Handoff {
     /** The activity to open so a runtime performs its own first-run setup. */
     private static String setupActivity(String pkg) {
         return pkg.equals(AZAHAR_PKG) ? AZAHAR_MAIN : RETROARCH_MENU;
-    }
-
-    /**
-     * True once per install of the runtime app, then never again. Records
-     * that we have asked the player for something, so a request they
-     * declined does not reappear on every launch of every game.
-     *
-     * <p>Per install, not forever: everything asked through here is state
-     * inside the runtime app (a registered folder, the emulator choice,
-     * a permission), and a reinstall of that app -- replacing upstream
-     * GameNative with ours, say -- starts it empty again while a marker
-     * written for the old install would say "already done". Measured:
-     * GameNative reinstalled, launch sent alone, its "Game Not Installed"
-     * dialog. So a marker older than the app's install counts as absent.
-     */
-    private static boolean askOnce(Context c, String pkg, String what) {
-        File marker = new File(CoreInstaller.ROOT, "." + what + ".asked");
-        if (marker.exists() && marker.lastModified() >= installedAt(c, pkg)) {
-            return false;
-        }
-        try {
-            if (!CoreInstaller.ROOT.isDirectory()) {
-                CoreInstaller.ROOT.mkdirs();
-            }
-            new java.io.FileOutputStream(marker).close();
-            marker.setLastModified(System.currentTimeMillis());
-        } catch (IOException e) {
-            Log.w(TAG, "cannot record the request for " + what, e);
-        }
-        return true;
     }
 
     /**
