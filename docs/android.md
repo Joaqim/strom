@@ -21,10 +21,12 @@ in a moment instead of after hundreds of requests; when the remote
 cannot be reached the status line says the copy's date. The automated
 launch intent (`LaunchActivity`) falls back to the same copy.
 
-Per-game APKs survive only as a narrow seam (`android.outputs.apk`) for
-games that have a genuine self-contained Android build. Today that is
-exactly one game: `games/balatro/apk.nix`, a LOVE title repackaged by
-`balatromobile`. That is not a path the catalog at large can take.
+Per-game APKs survive as a narrow seam (`android.outputs.apk`) for games
+that have a genuine self-contained Android build: one this repo builds
+(`games/balatro/apk.nix`, a LOVE title repackaged by `balatromobile`) or,
+far more often, a third-party port pinned from its release page
+(`android.apk`; the `apk` backend below, one app per game). That is not
+a path the catalog at large can take.
 
 ## Why not one APK per game
 
@@ -83,6 +85,7 @@ doing the same over IPFS is the same shape, not a new one.
 | `pcsx2`     |     9 | `unsupported` | no redistributable Android PS2 emulator exists            |
 | `native`    |    76 | `unsupported` | Linux x86_64 ELF, no runtime app will launch one          |
 | `custom`    |    40 | `unsupported` | per-game shell scripts, port individually                 |
+| any, with `android.apk` | ports | `apk` | the game's own Android build: pinned release, launcher intent, its own picker |
 
 340 of 465 games (73 percent) map onto a backend. The `unsupported`
 entries carry a `reason` string in the manifest so the client explains
@@ -1104,6 +1107,66 @@ Controls settings have an Auto-Map action). Azahar never reports which
 folder it was given, so the client finds it by shape: a readable
 `config/config.ini` beside two or more of `sdmc`, `nand`, `sysdata`,
 `shaders`. Read-modify-write, because Azahar rewrites that file on exit.
+
+### A game that is its own app (`apk`)
+
+The dual-screen ports catalogued for the AYN Thor
+(`github.com/codm2000/Dual-Screen-Games`) are self-contained third-party
+Android builds: a recomp or decomp wrapped in an SDL activity that
+draws a map, inventory or HUD on the second panel. No runtime app can be
+handed such a game; the port IS the runtime, one per game. That is the
+case `android.outputs.apk` was kept for, and `android.apk` is how a
+recipe names one that is fetched rather than built:
+
+```nix
+android.appId = "dev.picori.tmc";
+android.apk = {
+  url = "https://github.com/samyost1/tmc-android/releases/download/v1.2/tmc-dual-screen-v1.2.apk";
+  sha256 = "9f66...";            # lower-case hex, the client's Runtimes convention
+  size = 27200000;
+  version = "v1.2";
+  files."baserom.gba" = "/storage/emulated/0/Android/data/dev.picori.tmc/files/baserom.gba";
+  setup = "Tap Select ROM and pick {dir}/baserom.gba.";
+};
+```
+
+Setting it selects `backend = "apk"`; the manifest carries
+`apk: { appId, url, sha256, size, version, files?, setup? }` and
+`payload` as for any backend (a single pinned ROM derives automatically,
+as for retroarch). `outputs.apk` defaults to the fetched release, so
+`nix build .#apks.<slug>` is the same bytes the client installs.
+
+The client treats the port exactly like a runtime app it has a pin for:
+`Runtimes.forGame` returns a `Spec` built from the manifest,
+`RuntimeInstaller` fetches it, checks the hash and opens the system
+installer, and the Play row offers "Install <game> <version>" until the
+package is present. Launch is the package's launcher intent: none of
+these ports export anything else, and their data reaches them through
+their own SAF picker. So the payload is fetched to
+`Download/Strom/games/<slug>` as usual and the recipe's `setup` text --
+which button, which file, `{dir}` filled in -- is shown once per install
+of the port (toast, after the app is up, so there is somewhere to do it)
+and on the Play row every time. A port with no payload at all (an online
+client) is playable on its APK alone.
+
+`files` is documentation plus the adb tool's copy list
+(`scripts/android-adb-install.py <slug>`), never something the client
+does: since Android 11 no app may write into another app's
+`Android/data`, whatever its target SDK or storage permission. A port
+with no picker (Project Picori's Minish Cap reads a fixed path there) is
+therefore only provisionable from a PC, and its `setup` says so.
+
+Package visibility: the port's id is catalog data, so it cannot be a
+`<queries><package>` entry. The manifest declares an intent query for
+`MAIN`/`LAUNCHER` instead, which makes every launchable app visible to
+`getPackageInfo` and `getLaunchIntentForPackage` -- the two calls the
+backend makes -- without `QUERY_ALL_PACKAGES`.
+
+What the shape cannot do: register the data inside the port (its private
+storage or a persisted SAF grant), verify the port's own ROM check passed,
+or tell a port with a `versionCode` pinned at 1 (HK: Dual Souls) apart
+from an older install. Those are the port's business; the client's job
+ends at "installed, data on the card, app open".
 
 
 ## How many apps does a user install?

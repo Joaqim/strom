@@ -16,6 +16,7 @@ import gaming.kraftwerk.strom.catalog.Game;
 import gaming.kraftwerk.strom.catalog.Layer;
 import gaming.kraftwerk.strom.catalog.Options;
 import gaming.kraftwerk.strom.catalog.Setting;
+import gaming.kraftwerk.strom.runtime.CoreInstaller;
 import gaming.kraftwerk.strom.runtime.Handoff;
 import gaming.kraftwerk.strom.runtime.RuntimeInstaller;
 
@@ -361,9 +362,18 @@ public final class GameScreen extends LinearLayout implements Screen {
             r.live = false;
         } else {
             r.label.setText("Play");
-            r.note.setText(host.downloaded(game)
-                ? "already downloaded"
-                : "downloads on first launch");
+            String note;
+            if (game.isApk() && (game.payloadCid == null || game.payloadCid.isEmpty())) {
+                note = "nothing to download";
+            } else if (game.isApk() && game.apkSetup != null && !game.apkSetup.isEmpty()) {
+                // The port takes its data through its own picker, so the
+                // step is on screen every time, not only in the one toast.
+                note = game.apkSetup.replace("{dir}",
+                    CoreInstaller.payloadDir(game).getAbsolutePath());
+            } else {
+                note = host.downloaded(game) ? "already downloaded" : "downloads on first launch";
+            }
+            r.note.setText(note);
             r.live = !busy;
         }
     }

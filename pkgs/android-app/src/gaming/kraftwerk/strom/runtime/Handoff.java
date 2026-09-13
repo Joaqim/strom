@@ -127,6 +127,9 @@ public final class Handoff {
      * does not make it playable and vice versa.
      */
     public static boolean available(Context c, Game g) {
+        if (g.isApk()) {
+            return installed(c, g.apkAppId);
+        }
         if (Runtimes.isNintendoDs(g)) {
             return installed(c, WATERMELON_PKG);
         }
@@ -198,6 +201,10 @@ public final class Handoff {
         // -- a dead end, since availability correctly reported the DS
         // runtime present, so the button stayed on Play and never offered
         // to install anything.
+        if (g.isApk()) {
+            launchApk(c, g, payloadDir);
+            return;
+        }
         if (Runtimes.isNintendoDs(g) && installed(c, WATERMELON_PKG)) {
             launchWatermelon(c, g, payloadDir);
             return;
@@ -235,6 +242,31 @@ public final class Handoff {
             return true;
         } catch (PackageManager.NameNotFoundException e) {
             return false;
+        }
+    }
+
+    /**
+     * Open a game that is its own app: a third-party port installed from
+     * its release page. The port has no launch contract beyond its
+     * launcher activity, and its data reaches it through its own picker,
+     * so the payload sits where the client put it and the recipe's setup
+     * text says which button to press.
+     *
+     * <p>Said once per install of the port, after the app is up so the
+     * toast lands on top of it: the step is inside the port, so refusing
+     * to launch until it is done (the GameNative shape) would leave the
+     * player nowhere to do it.
+     */
+    private static void launchApk(Context c, Game g, File payloadDir) throws IOException {
+        Intent i = c.getPackageManager().getLaunchIntentForPackage(g.apkAppId);
+        if (i == null) {
+            throw new NotInstalled(g.apkAppId + " has no launcher activity");
+        }
+        i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        c.startActivity(i);
+        if (g.apkSetup != null && !g.apkSetup.isEmpty()
+            && askOnce(c, g.apkAppId, g.apkAppId + "-setup")) {
+            throw new NeedsSetup(g.apkSetup.replace("{dir}", payloadDir.getAbsolutePath()));
         }
     }
 

@@ -51,6 +51,16 @@
          is io.github.lime3ds.android and is deliberately NOT listed: it
          cannot open the content: URIs this client hands out. -->
     <package android:name="org.azahar_emu.azahar" />
+    <!-- Games that are their own app (backend "apk"): their package ids
+         come from the catalog, not from this file, so they cannot be
+         named here. What the client does with one is exactly "is it
+         installed" and "open its launcher activity", and an intent query
+         makes every app with a launcher activity visible for both;
+         narrower than QUERY_ALL_PACKAGES, which Play policy restricts. -->
+    <intent>
+      <action android:name="android.intent.action.MAIN" />
+      <category android:name="android.intent.category.LAUNCHER" />
+    </intent>
   </queries>
 
   <!-- Cleartext is permitted because a catalog may be a plain static

@@ -75,16 +75,54 @@ public final class Game {
     /** Screenshot URLs, in published order; empty when there are none. */
     public List<String> screenshots = Collections.emptyList();
 
+    /**
+     * The game's own Android build, for the {@code apk} backend: a
+     * third-party port (the dual-screen ports for the AYN Thor) that is
+     * installed like a runtime app and opened by its launcher intent.
+     * {@code apkAppId} is that package; null on every other backend.
+     */
+    public String apkAppId;
+    public String apkUrl;
+    /** Lower-case hex sha256 of the APK at {@link #apkUrl}. */
+    public String apkSha256;
+    public long apkSize;
+    public String apkVersion;
+    /**
+     * What the player does inside the port, once, to point it at the
+     * payload; {@code {dir}} stands for the payload directory. Null when
+     * the port needs nothing.
+     */
+    public String apkSetup;
+    /**
+     * Payload path -> absolute device path the port reads it from with no
+     * picker. Informational here: another app's {@code Android/data} is
+     * not writable, so the setup text is what the player follows.
+     */
+    public java.util.Map<String, String> apkFiles = Collections.emptyMap();
+
     /** Backends this client can actually hand off to. */
     public static boolean supported(String backend) {
         return "retroarch".equals(backend)
             || "azahar".equals(backend)
             || "gamenative".equals(backend)
-            || "dolphin".equals(backend);
+            || "dolphin".equals(backend)
+            || "apk".equals(backend);
     }
 
-    /** A game is playable when a runtime can take it and its bytes are published. */
+    /** Whether the game is its own Android app rather than data for a runtime. */
+    public boolean isApk() {
+        return "apk".equals(backend) && apkUrl != null && !apkUrl.isEmpty();
+    }
+
+    /**
+     * A game is playable when a runtime can take it and its bytes are
+     * published. A port that needs no data at all (an online client) is
+     * playable on the strength of its APK alone.
+     */
     public boolean isPlayable() {
+        if (isApk()) {
+            return true;
+        }
         return supported(backend) && payloadCid != null && !payloadCid.isEmpty();
     }
 

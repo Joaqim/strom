@@ -356,6 +356,24 @@ public final class Catalog {
             g.padKeys = keys;
         }
 
+        // A port that is its own app. Absent on every other backend.
+        g.apkAppId = Json.str(m, "android", "apk", "appId");
+        g.apkUrl = Json.str(m, "android", "apk", "url");
+        g.apkSha256 = Json.str(m, "android", "apk", "sha256");
+        g.apkSize = Json.num(m, 0, "android", "apk", "size");
+        g.apkVersion = Json.str(m, "android", "apk", "version");
+        g.apkSetup = Json.str(m, "android", "apk", "setup");
+        Object af = Json.path(m, "android", "apk", "files");
+        if (af instanceof java.util.Map) {
+            java.util.Map<String, String> files = new java.util.LinkedHashMap<String, String>();
+            for (java.util.Map.Entry<?, ?> e : ((java.util.Map<?, ?>) af).entrySet()) {
+                if (e.getValue() instanceof String) {
+                    files.put(String.valueOf(e.getKey()), (String) e.getValue());
+                }
+            }
+            g.apkFiles = files;
+        }
+
         // Player options and the mod trees they select. Both are absent for
         // every game that publishes no settings, which is nearly all of
         // them, and absent reads as none rather than as an error.

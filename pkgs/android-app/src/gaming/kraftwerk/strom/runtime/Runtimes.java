@@ -124,6 +124,13 @@ final class Runtimes {
      * backend like every other console.
      */
     static Spec forGame(gaming.kraftwerk.strom.catalog.Game g) {
+        if (g.isApk()) {
+            // The game's own build, pinned by the catalog rather than by
+            // this table: which release a port is at is a property of the
+            // game's recipe, and it is hash-pinned there the same way.
+            return new Spec(g.apkAppId, g.title() + " " + g.apkVersion,
+                g.apkUrl, g.apkSha256, g.apkSize);
+        }
         if (isNintendoDs(g)) {
             return WATERMELONDS;
         }

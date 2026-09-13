@@ -84,7 +84,10 @@ public final class Launch {
             }
 
             File dir = CoreInstaller.payloadDir(g);
-            boolean have = present(dir);
+            // A port with no data (an online client) has nothing to
+            // fetch; its directory then never exists and nothing reads it.
+            boolean nothing = g.payloadCid == null || g.payloadCid.isEmpty();
+            boolean have = nothing || present(dir);
             // What the tree already carries, so a mod is fetched once and a
             // mod that was switched back off is noticed.
             Set<String> applied = have ? Applied.read(dir) : new LinkedHashSet<String>();
@@ -122,7 +125,7 @@ public final class Launch {
                 // interrupted earlier attempt recorded.
                 applied.clear();
                 Applied.write(dir, applied);
-            } else {
+            } else if (!nothing) {
                 p.say("already downloaded");
             }
 
