@@ -102,15 +102,20 @@
          driving adb, and a frontend that has its own library and only
          wants a game started. Exported on purpose; it takes a catalog URL
          and a slug and nothing else, and every payload it fetches is
-         verified against the CID the catalog names. noHistory so it never
-         sits in the recents list after the runtime takes over. Translucent
-         rather than NoDisplay: NoDisplay requires finish() before onResume
-         returns, and this activity fetches a payload first, which crashed
-         it with "did not call finish() prior to onResume() completing". -->
+         verified against the CID the catalog names. It finishes itself once
+         the handoff is done and is kept out of recents; NOT noHistory, which
+         finishes it the moment the runtime's first window covers it, and a
+         handoff that then waits (registering a folder with GameNative, up
+         to eight seconds on a build that does not answer) sends its launch
+         from a process with no activity, which Android refuses as a
+         background activity start (measured: "callingUidProcState:
+         CACHED_EMPTY", no launch). Translucent rather than NoDisplay:
+         NoDisplay requires finish() before onResume returns, and this
+         activity fetches a payload first, which crashed it with "did not
+         call finish() prior to onResume() completing". -->
     <activity
         android:name=".LaunchActivity"
         android:exported="true"
-        android:noHistory="true"
         android:excludeFromRecents="true"
         android:theme="@android:style/Theme.Translucent.NoTitleBar">
       <intent-filter>

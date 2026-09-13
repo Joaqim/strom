@@ -411,9 +411,11 @@ public final class Handoff {
      * setup message below, because a player cannot guess
      * {@code strom-ff8-supervisor.exe}.
      *
-     * <p>Nothing comes back either way: no result code, no broadcast, and a
-     * missing executable is not an error to GameNative -- it boots its
-     * bundled file manager. So this reports "handed off", never "running".
+     * <p>What comes back: our build answers the registration, and answers
+     * a launch of a game it does not list; a missing executable is not an
+     * error to GameNative -- it boots its bundled file manager -- and a
+     * session that started says nothing. So this reports "handed off",
+     * never "running". Stock GameNative answers nothing.
      */
     private static void launchGameNative(Context c, String pkg, Game g, File payloadDir)
         throws IOException {
@@ -425,18 +427,16 @@ public final class Handoff {
         // The pad-to-key profile, when the manifest declares one. A runtime
         // that accepts the registration intent gets it sent and imported;
         // it is also written beside the game as GameNative's own `.icp`,
-        // which is this client's record of what it last sent (a change
-        // re-registers) and a readable statement of the mapping. Stock
-        // GameNative cannot import it -- its InputControlsManager has an
-        // importProfile() that no screen calls -- so a stock install is
-        // told the bindings to set by hand instead.
+        // a readable statement of the mapping. Stock GameNative cannot
+        // import it -- its InputControlsManager has an importProfile()
+        // that no screen calls -- so a stock install is told the bindings
+        // to set by hand instead.
         String profileName = null;
         String profileJson = null;
-        boolean profileChanged = false;
         if (PadKeys.any(g.padKeys)) {
             profileName = "strom: " + g.slug;
             profileJson = PadKeys.profileJson(0, profileName, g.padKeys);
-            profileChanged = writeIfChanged(new File(payloadDir, PROFILE_FILE), profileJson);
+            writeIfChanged(new File(payloadDir, PROFILE_FILE), profileJson);
         }
 
         // A runtime carrying the registration intent (our fork, and
@@ -444,35 +444,53 @@ public final class Handoff {
         // build needs the player to do it once, in its own UI.
         Intent register = new Intent(pkg + ".ADD_CUSTOM_GAME_FOLDER").setPackage(pkg);
         boolean registers = c.getPackageManager().resolveActivity(register, 0) != null;
+        // Whether GameNative answered the registration. A build that
+        // answers (strom-4 on) also reports a launch it could not start;
+        // one that does not (strom-3) is launched blind, as before.
+        boolean answers = false;
         if (registers) {
-            // Only when there is something new to say: registration is
-            // idempotent but not free -- it cold-starts GameNative, and a
-            // launch sent into that startup is dropped (measured: the
+            // On EVERY launch, never remembered. "Registered" is a fact
+            // inside GameNative -- its folder list lives in its private
+            // preferences, dies with a reinstall, and loses this entry
+            // when the player deletes the container in there -- and a
+            // record of it kept here drifted from that fact every time
+            // (measured: a container deleted in GameNative, a marker here
+            // saying registered, every Play ending in its "Game Not
+            // Installed" dialog with no way out). Registering a registered
+            // folder is a no-op on GameNative's side; what it costs is a
+            // cold start of GameNative when it was not running, which the
+            // launch would have paid anyway.
+            //
+            // A launch sent into that cold start is dropped (measured: the
             // launch parsed, "Emitting ExternalGameLaunch", no session).
-            // So register on the first run and whenever the profile
-            // changed, wait out the startup, and otherwise send the launch
-            // alone.
-            // "Registered" is a fact about this install of GameNative, not
-            // about the folder: its folder list dies with a reinstall, so
-            // the record is the per-install kind (askOnce), not the
-            // .gamenative file beside the game, which is GameNative's own
-            // id record and stays put across installs.
-            boolean firstTime = askOnce(c, pkg, pkg + "-registered-" + g.slug);
-            if (firstTime || profileChanged) {
-                register.putExtra("folder", payloadDir.getAbsolutePath());
-                if (profileJson != null) {
-                    register.putExtra("controls_profile", profileJson);
-                }
-                register.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                c.startActivity(register, onBuiltIn());
-                Log.i(TAG, "registered " + payloadDir + " with " + pkg
-                    + (profileJson == null ? "" : " + controls profile"));
-                try {
-                    Thread.sleep(8000);
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                }
+            // A build that answers says when it is safe; for one that does
+            // not, the wait is the same eight seconds as before.
+            register.putExtra("folder", payloadDir.getAbsolutePath());
+            register.putExtra(EXTRA_REPLY_TO, c.getPackageName());
+            if (profileJson != null) {
+                register.putExtra("controls_profile", profileJson);
             }
+            register.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            Reply reply = new Reply(c, pkg + ".CUSTOM_GAME_FOLDER_RESULT");
+            try {
+                c.startActivity(register, onBuiltIn());
+                Intent answer = reply.await(REGISTER_WAIT_MS);
+                answers = answer != null;
+                if (answers && !answer.getBooleanExtra("registered", false)) {
+                    // Its two reasons, in its own words: no storage
+                    // permission, or nothing in the folder it takes for a
+                    // game.
+                    throw new IOException(labelFor(pkg) + " refused the folder "
+                        + payloadDir + ": it has no permission to read it, or"
+                        + " finds no game in it");
+                }
+            } finally {
+                reply.close();
+            }
+            Log.i(TAG, "registered " + payloadDir + " with " + pkg
+                + (profileJson == null ? "" : " + controls profile")
+                + (answers ? "" : " (no answer within " + REGISTER_WAIT_MS + " ms: launching blind)"));
+
             // The one setting no intent can carry, said once per install
             // rather than per game: GameNative keeps the last chosen
             // emulator as the default for every container it creates.
@@ -578,7 +596,80 @@ public final class Handoff {
             + (config == null
                 ? " (no container_config: it would overwrite the wine build)"
                 : " config=" + config));
-        c.startActivity(intent, onBuiltIn());
+        if (!answers) {
+            c.startActivity(intent, onBuiltIn());
+            return;
+        }
+        // A build that answers reports a game it cannot find, which is the
+        // one way a launch used to end silently. It reports nothing on
+        // success -- the session simply starts -- so a short silence is
+        // the good outcome.
+        intent.putExtra(EXTRA_REPLY_TO, c.getPackageName());
+        Reply reply = new Reply(c, pkg + ".LAUNCH_GAME_RESULT");
+        try {
+            c.startActivity(intent, onBuiltIn());
+            Intent answer = reply.await(LAUNCH_WAIT_MS);
+            if (answer != null) {
+                throw new IOException(labelFor(pkg) + " does not list " + payloadDir
+                    + " even after registering it (" + answer.getStringExtra("status")
+                    + "): open it and check its library");
+            }
+        } finally {
+            reply.close();
+        }
+    }
+
+    /** The extra naming us as the package GameNative's answers go to. */
+    private static final String EXTRA_REPLY_TO = "reply_to";
+    /** How long a cold-started GameNative takes to reach its registration handler, measured. */
+    private static final long REGISTER_WAIT_MS = 8000;
+    /** A "not installed" answer follows the launch within a second; this is generous. */
+    private static final long LAUNCH_WAIT_MS = 4000;
+
+    /**
+     * One answer from GameNative, waited for on the launching thread. The
+     * receiver is registered before the intent goes out so an answer that
+     * comes back at once is not missed, and must be closed.
+     */
+    private static final class Reply extends android.content.BroadcastReceiver {
+        private final Context c;
+        private final java.util.concurrent.CountDownLatch got =
+            new java.util.concurrent.CountDownLatch(1);
+        private volatile Intent answer;
+
+        Reply(Context c, String action) {
+            // The application's context, not the activity's: the automated
+            // launch runs from a noHistory activity that the system
+            // destroys the moment GameNative covers it, taking its
+            // receivers with it (measured: "Receiver not registered" at
+            // close, eight seconds in). The process, and so this context,
+            // outlives the answer.
+            this.c = c.getApplicationContext();
+            // Exported: the sender is another app. Its broadcast is
+            // addressed to this package, so no other app can see it.
+            this.c.registerReceiver(this, new android.content.IntentFilter(action),
+                Context.RECEIVER_EXPORTED);
+        }
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            answer = intent;
+            got.countDown();
+        }
+
+        /** The answer, or null when none came within {@code ms}. */
+        Intent await(long ms) {
+            try {
+                got.await(ms, java.util.concurrent.TimeUnit.MILLISECONDS);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+            return answer;
+        }
+
+        void close() {
+            c.unregisterReceiver(this);
+        }
     }
 
     private static String jsonString(String s) {
