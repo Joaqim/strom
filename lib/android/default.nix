@@ -179,10 +179,20 @@ in
         keys GameNative's IntentLaunchManager.parseContainerConfig
         actually reads take effect (screenSize, envVars, graphicsDriver,
         dxwrapper, dxwrapperConfig, wincomponents, execArgs,
-        executablePath, box64Preset, videoMemorySize, ...); unknown keys
-        are silently ignored on the device side. Note that wineVersion,
-        emulator (box64 vs FEX) and the container variant are NOT
-        settable over the intent.
+        executablePath, box64Preset, videoMemorySize, emulator, ...);
+        unknown keys are silently ignored on the device side. Note that
+        wineVersion and the container variant are NOT settable over the
+        intent, and `emulator` only by the strom build from strom-4 on
+        (earlier builds ignore the key; the client then tells the
+        player to set Box64 by hand after every launch).
+
+        `emulator` defaults to `Box64` for every game: GameNative's own
+        default, FEXCore, faults inside its wow64 layer the moment a
+        32-bit executable starts and the game vanishes within a second
+        with no message, while Box64 runs 32-bit and 64-bit binaries
+        alike. The manifest cannot tell the two apart -- reading the PE
+        header of `game.executable` would mean building every payload
+        to evaluate the catalog -- so it is sent unconditionally.
 
         `executablePath` is always sent, derived from `game.executable`,
         so do not set it here. Overriding it would create a second
@@ -592,6 +602,7 @@ in
         containerDefaults = {
           execArgs = "";
           dxwrapper = "dxvk";
+          emulator = "Box64";
         };
         container = {
           # game.executable is the single source of truth for the
@@ -604,6 +615,8 @@ in
           executablePath = game.executable;
           execArgs = lib.concatStringsSep " " game.executableArgs;
           dxwrapper = "dxvk";
+          # Spelled as GameNative's own emulator_entries spell it.
+          emulator = "Box64";
         }
         // game.android.containerConfig;
       in

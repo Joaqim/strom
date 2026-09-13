@@ -490,18 +490,6 @@ public final class Handoff {
             Log.i(TAG, "registered " + payloadDir + " with " + pkg
                 + (profileJson == null ? "" : " + controls profile")
                 + (answers ? "" : " (no answer within " + REGISTER_WAIT_MS + " ms: launching blind)"));
-
-            // The one setting no intent can carry, said once per install
-            // rather than per game: GameNative keeps the last chosen
-            // emulator as the default for every container it creates.
-            if (askOnce(c, pkg, pkg + "-emulator")) {
-                throw new NeedsSetup("Once, in GameNative: open any game's"
-                    + " container settings and under Emulation set the emulator"
-                    + " to Box64. Its default, FEXCore, cannot run 32-bit games"
-                    + " (they exit within a second, with no message), and"
-                    + " GameNative remembers the choice for every game after."
-                    + " Then press Play again.");
-            }
         }
 
         // Asked once per GAME, not once per runtime: the folder to register
@@ -568,7 +556,11 @@ public final class Handoff {
         if (registers) {
             StringBuilder sb = new StringBuilder("{\"executablePath\":")
                 .append(jsonString(g.executablePath))
-                .append(",\"dxwrapper\":").append(jsonString(g.dxwrapper));
+                .append(",\"dxwrapper\":").append(jsonString(g.dxwrapper))
+                // The 32-bit emulator, Box64 unless the recipe says
+                // otherwise; strom-4 on reads it, strom-3 ignores it (see
+                // below).
+                .append(",\"emulator\":").append(jsonString(g.emulator));
             // The game's own size when it declares one, else the panel's.
             // Omitting the key does not get the panel: GameNative's
             // "detection" only buckets the aspect ratio and every 16:9
@@ -598,7 +590,19 @@ public final class Handoff {
                 : " config=" + config));
         if (!answers) {
             c.startActivity(intent, onBuiltIn());
-            return;
+            // A build that does not answer does not read the emulator key
+            // either, and its default, FEXCore, ends a 32-bit game a
+            // second after launch with no message. Whether THIS launch
+            // made a window cannot be seen from here, so the hint goes
+            // out after every launch on such a build, over the game --
+            // once per install was a hidden record that outlived the
+            // player's choice, measured: set, emulator still FEXCore,
+            // never shown again.
+            throw new NeedsSetup("If the game does not appear: in GameNative,"
+                + " open its container settings and under Emulation set the"
+                + " emulator to Box64. FEXCore, the default, cannot run"
+                + " 32-bit games, and this build of GameNative cannot be told"
+                + " otherwise from here.");
         }
         // A build that answers reports a game it cannot find, which is the
         // one way a launch used to end silently. It reports nothing on

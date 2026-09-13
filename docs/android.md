@@ -640,6 +640,9 @@ and layering is the simpler one.
 }
 ```
 
+`emulator` is `Box64` when absent, as `dxwrapper` is `dxvk` and
+`execArgs` is empty: the manifest omits the client's defaults.
+
 No `screenSize` unless a recipe sets one: it is a property of the panel,
 and the client fills it in from the device it runs on (`Display.getMode`,
 landscape). A value from the catalog is the recipe author's panel --
@@ -757,9 +760,13 @@ supervisor, its Qt launcher and `FF8_EN.exe` all reach the screen, and the
 64-bit `animal-well` plays under it too. So the instruction is one setting,
 not one per game: `PrefManager.emulator` seeds every container created
 afterwards (`ContainerUtils.kt:152`, persisted at `:221`), and the UI offers
-exactly `FEXCore` / `Box64`. It is NOT settable over the launch intent
-(`parseContainerConfig` has no `emulator` key), so the client names it in
-its setup message. Hardware note: the old `wow64Mode` / `box86` fields are
+exactly `FEXCore` / `Box64`. Upstream's `parseContainerConfig` has no
+`emulator` key; the strom build reads it from strom-4 on and the client
+sends `Box64` for every gamenative game (`lib/android/default.nix`
+cannot tell 32-bit from 64-bit without building the payload, and Box64
+runs both). On strom-3 the key is ignored and the client repeats the
+Box64 hint after every launch, as a toast over the game; it cannot see
+whether the launch made a window. Hardware note: the old `wow64Mode` / `box86` fields are
 dead in both live launchers (only the unused proot launcher reads them) and
 no box86 ships, so that lever does not exist.
 
@@ -863,10 +870,14 @@ over the container's stored values, so there they are simply sent
 (verified: a `dxwrapper: vkd3d` sent to an existing container extracted
 the VKD3D DLLs and ANIMAL WELL ran; under the default DXVK it stops at
 "Failed to create D3D12 Device", so its recipe declares
-`android.containerConfig.dxwrapper`). `emulator` has no intent key in
-any build, and it is the one that kills silently: FEXCore ends every
-32-bit game a second after launch with no dialog (above), so the client
-still asks for Box64 once per install of the runtime.
+`android.containerConfig.dxwrapper`). `emulator` has an intent key only
+in the strom build from strom-4 on, and it is the one that kills
+silently: FEXCore ends every 32-bit game a second after launch with no
+dialog (above). The client sends `Box64` unconditionally; on a build
+that ignores the key it says so after every launch, because a
+once-per-install record of having said it was measured to outlive the
+player's choice (marker set, emulator still FEXCore, hint never shown
+again).
 
 **Source-derived, not a published API.** Only the intent is advertised; the
 folder layout, `.gamenative` format and `A:` mapping were read out of

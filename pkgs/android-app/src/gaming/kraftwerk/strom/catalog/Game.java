@@ -43,6 +43,8 @@ public final class Game {
     /** Only when the game asks for a specific one; null means the device decides. */
     public String screenSize;
     public String dxwrapper;
+    /** The 32-bit emulator, "Box64" unless the manifest says otherwise. */
+    public String emulator;
     /**
      * Pad buttons mapped to the keys the game reads, empty when the pad
      * should reach it as XInput. See {@link PadKeys}.

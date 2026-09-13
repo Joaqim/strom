@@ -345,6 +345,8 @@ public final class Catalog {
         g.screenSize = Json.str(m, "android", "gamenative", "containerConfig", "screenSize");
         g.dxwrapper =
             orElse(Json.str(m, "android", "gamenative", "containerConfig", "dxwrapper"), "dxvk");
+        g.emulator =
+            orElse(Json.str(m, "android", "gamenative", "containerConfig", "emulator"), "Box64");
         Object pk = Json.path(m, "android", "gamenative", "padKeys");
         if (pk instanceof java.util.Map) {
             java.util.Map<String, String> keys = new java.util.LinkedHashMap<String, String>();
