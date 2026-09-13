@@ -907,6 +907,28 @@ public final class Handoff {
     }
 
     /**
+     * Delete the {@code .<what>.asked} files an earlier build left under
+     * the Strom directory. They recorded "we told the player once" for a
+     * registration, an emulator hint, a port's picker step, and were
+     * measured to outlive every fact they stood for; nothing reads them
+     * now, and every hint they suppressed is derived instead. Deleted
+     * rather than ignored so a directory listing does not keep suggesting
+     * they mean something.
+     */
+    public static void forgetAsked() {
+        File[] all = CoreInstaller.ROOT.listFiles();
+        if (all == null) {
+            return;
+        }
+        for (File f : all) {
+            String n = f.getName();
+            if (n.startsWith(".") && n.endsWith(".asked") && f.isFile()) {
+                Log.i(TAG, (f.delete() ? "deleted" : "could not delete") + " old marker " + f);
+            }
+        }
+    }
+
+    /**
      * When the runtime app was installed, as a wall-clock millisecond;
      * a reinstall moves it. Zero when the app is not installed, so every
      * marker then reads as current.

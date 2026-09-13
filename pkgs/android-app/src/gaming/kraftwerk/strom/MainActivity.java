@@ -18,6 +18,7 @@ import gaming.kraftwerk.strom.catalog.Game;
 import gaming.kraftwerk.strom.catalog.Options;
 import gaming.kraftwerk.strom.ipfs.Fetcher;
 import gaming.kraftwerk.strom.runtime.CoreInstaller;
+import gaming.kraftwerk.strom.runtime.Handoff;
 import gaming.kraftwerk.strom.runtime.RuntimeInstaller;
 import gaming.kraftwerk.strom.ui.CoverCache;
 import gaming.kraftwerk.strom.ui.GameGrid;
@@ -140,6 +141,12 @@ public class MainActivity extends Activity implements Host {
         show(grid);
 
         Fetcher.setPrivateGateway(gateway());
+        pool.submit(new Runnable() {
+            @Override
+            public void run() {
+                Handoff.forgetAsked();
+            }
+        });
 
         String url = catalogUrl();
         if (!catalog.isEmpty() && url.equals(catalogFrom)) {
