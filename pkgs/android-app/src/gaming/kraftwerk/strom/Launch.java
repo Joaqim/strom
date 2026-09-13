@@ -125,6 +125,17 @@ public final class Launch {
                 // interrupted earlier attempt recorded.
                 applied.clear();
                 Applied.write(dir, applied);
+                if (g.isApk()) {
+                    // The port takes its data through a SAF picker, and the
+                    // picker lists Downloads from MediaStore, which does not
+                    // notice a file another process wrote until something
+                    // scans it. Measured on the Thor: a freshly fetched ROM
+                    // was on disk and the picker showed the folder empty
+                    // until scan_file ran. The path-based backends never
+                    // needed this; they hand the path over directly.
+                    android.media.MediaScannerConnection.scanFile(c,
+                        new String[] { dir.getAbsolutePath() }, null, null);
+                }
             } else if (!nothing) {
                 p.say("already downloaded");
             }
