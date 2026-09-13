@@ -11,7 +11,7 @@ gets its data from a PC.
     scripts/android-adb-install.py <slug> [--serial S] [--launch] [--no-payload]
 
 Reads `nix build .#androidManifests.<slug>`, installs `.#apks.<slug>`,
-pushes `.#androidPayloads.<slug>` to `/sdcard/Download/Strom/games/<slug>`
+pushes `.#androidPayloads.<slug>` to `/sdcard/Download/Strom/<slug>`
 (where the client would have put it), then pushes every `files` entry to
 its absolute device path. Prints the recipe's setup text with `{dir}`
 filled in, because the picker step inside the port is still the player's.
@@ -24,7 +24,7 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-DEVICE_ROOT = "/sdcard/Download/Strom/games"
+DEVICE_ROOT = "/sdcard/Download/Strom"
 
 
 def nix_build(attr: str) -> Path:

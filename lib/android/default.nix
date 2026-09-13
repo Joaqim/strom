@@ -269,7 +269,7 @@ in
                 (`scripts/android-adb-install.py`) copy list only: since
                 Android 11 no app can write into another app's
                 `Android/data`, so the client stages the payload under
-                `Download/Strom/games/<slug>` and relies on `setup`.
+                `Download/Strom/<slug>` and relies on `setup`.
               '';
             };
 

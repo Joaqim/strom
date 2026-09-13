@@ -1143,7 +1143,7 @@ installer, and the Play row offers "Install <game> <version>" until the
 package is present. Launch is the package's launcher intent: none of
 these ports export anything else, and their data reaches them through
 their own SAF picker. So the payload is fetched to
-`Download/Strom/games/<slug>` as usual and the recipe's `setup` text --
+`Download/Strom/<slug>` as usual and the recipe's `setup` text --
 which button, which file, `{dir}` filled in -- is shown once per install
 of the port (toast, after the app is up, so there is somewhere to do it)
 and on the Play row every time. A port with no payload at all (an online
