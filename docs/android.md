@@ -1304,12 +1304,18 @@ upstream because the handoff and the container library are per id. A
 device with upstream installed keeps it, per the rule above, and gets
 the hand-instruction path; a fresh device gets the strom build.
 
-Building a release: `nix build .#legacyPackages.x86_64-linux.gamenativeRedirect`
-for the asset, Gradle `:app:assembleLegacyRelease` on branch `strom-build` of
-the fork, `apksigner` with the strom key, `gh release create strom-<n>`
-on `kraftwerk-gaming/GameNative`, then the URL, sha256 and size go into
-`Runtimes.GAMENATIVE`. The fork's GitHub workflows cannot build it: they
-need upstream's signing and API secrets.
+Releasing: push a `strom-<n>` tag on `kraftwerk-gaming/GameNative`. Its
+`strom-release.yml` builds `:app:assembleLegacyRelease`, signs with the
+strom key held as repository secrets (`STROM_KEYSTORE` base64 of the
+jks, `STROM_KEY_ALIAS`, `STROM_STORE_PASSWORD`, `STROM_KEY_PASSWORD`),
+and publishes `gamenative-strom-<n>.apk` plus its sha256 as the release
+for the tag, by the workflow's own token. Then the URL, sha256 and size
+of THAT asset go into `Runtimes.GAMENATIVE` -- a local Gradle build of
+the same commit is not byte-identical. (The redirect asset,
+`nix build .#legacyPackages.x86_64-linux.gamenativeRedirect`, is
+committed in the fork and only needs rebuilding when
+pkgs/gamenative-redirect changes.) Upstream's own workflows are left
+alone; they need upstream's signing and API secrets.
 
 ### The path to fewer apps
 

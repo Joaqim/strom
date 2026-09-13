@@ -91,9 +91,15 @@ final class Runtimes {
      * an existing container, a container it creates gets its A: drive,
      * mapped drives are hard disks rather than floppies, and a dinput8.dll
      * shipped with a game -- a mod loader -- loads for that game) and adds
-     * the two intents this client drives: register a game folder, install
-     * and select a pad-to-keys profile. Without them GameNative needs a
-     * hand step per game.
+     * the intents this client drives: register a game folder (as a
+     * broadcast, so this client keeps the foreground and may start the
+     * launch), install and select a pad-to-keys profile, choose the 32-bit
+     * emulator, seed files into the container, drop the container; and it
+     * answers -- registration done, game not installed -- instead of
+     * showing a dialog behind this client's screen. Without them
+     * GameNative needs a hand step per game. strom-4 on: strom-3 has the
+     * activity-only registration and no answers, and Handoff falls back
+     * to a Play of its own for it.
      *
      * <p>It also ships none of the four binaries upstream's
      * THIRD_PARTY_NOTICES withholds a redistribution grant for; the one
@@ -108,10 +114,10 @@ final class Runtimes {
      */
     static final Spec GAMENATIVE = new Spec(
         "app.gamenative",
-        "GameNative 1.2.1 (strom-3)",
-        "https://github.com/kraftwerk-gaming/GameNative/releases/download/strom-3/gamenative-strom-3.apk",
-        "8e8fb8d99772f0c7593ccebd0c68f69b1c23da1ee1c3575e7308d86395164f73",
-        567067446L);
+        "GameNative 1.2.1 (strom-4)",
+        "https://github.com/kraftwerk-gaming/GameNative/releases/download/strom-4/gamenative-strom-4.apk",
+        "caedd41b0c702a13bd549787d824216f0c0ea79264deefeb10a6d37d45657d67",
+        567124790L);
 
     private Runtimes() {
     }
