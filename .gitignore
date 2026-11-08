@@ -8,6 +8,8 @@ TODO.md
 .direnv/
 __pycache__/
 /.pre-commit-config.yaml
+.env*
+!.envrc
 
 # Steam metadata API response cache for scripts/fetch-steam-metadata.py.
 web/.steam-cache/
