@@ -68,6 +68,43 @@ let
     }:
     let
       cfg = config;
+      # The whole GL stack (vulkan, GBM, classic/EGL dri) from this
+      # flake's own mesa, pointed at inside the sandbox by the inner
+      # script below. The sandbox ro-binds the host /run/opengl-driver,
+      # and the host's mesa can be built against a newer glibc than the
+      # FHS one — then every host driver library fails to load against
+      # /usr/lib/libm.so.6 and each loader degrades in turn: gamescope
+      # and DXVK see zero vulkan physical devices, Xwayland's glamor
+      # can't create a gbm device and falls back to software, and the
+      # frame stays black without a crash. Referencing the flake's mesa
+      # keeps every loader on the one driver build that matches the FHS
+      # glibc, whatever the host has installed. The mesa store paths
+      # are absolute, so drivers load whether or not mesa is an
+      # fhsTargetPkg. Anything outside this set (asahi, dzn, nvidia
+      # proprietary) stays reachable through a host-provided value for
+      # the same variables, which the inner script honors.
+      mesa64 = pkgs.mesa;
+      mesa32 = pkgs.pkgsi686Linux.mesa;
+      vulkanIcdDrivers = [
+        "intel"
+        "intel_hasvk"
+        "nouveau"
+        "radeon"
+        "virtio"
+        "lvp"
+      ];
+      vulkanDriverFiles =
+        let
+          icds = mesa: arch: map (d: "${mesa}/share/vulkan/icd.d/${d}_icd.${arch}.json") vulkanIcdDrivers;
+        in
+        # 32-bit jsons ride along only for multilib runtimes (proton's
+        # 32-bit winevulkan); the loader filters jsons by library_arch.
+        lib.concatStringsSep ":" (
+          icds mesa64 "x86_64" ++ lib.optionals cfg.bwrap.fhsMultilib (icds mesa32 "i686")
+        );
+      glDriverPaths = lib.concatStringsSep ":" (
+        [ "${mesa64}/lib/dri" ] ++ lib.optionals cfg.bwrap.fhsMultilib [ "${mesa32}/lib/dri" ]
+      );
       # No quotes here: wrapPackage's escapeShellArgWithEnv adds its
       # own, and literal quotes leak into the filename wine sees.
       overlayExe =
@@ -528,6 +565,15 @@ let
                 mkdir -p "$GAMECACHE"
                 export MESA_SHADER_CACHE_DIR="$GAMECACHE"
                 export DXVK_STATE_CACHE_PATH="$GAMECACHE"
+
+                # GL stack from the flake's mesa (see the comment at
+                # vulkanDriverFiles above). The :- defaults leave
+                # host-provided values (custom GPU stack, debugging) in
+                # charge.
+                export VK_DRIVER_FILES="''${VK_DRIVER_FILES:-${vulkanDriverFiles}}"
+                export GBM_BACKENDS_PATH="''${GBM_BACKENDS_PATH:-${mesa64}/lib/gbm}"
+                export LIBGL_DRIVERS_PATH="''${LIBGL_DRIVERS_PATH:-${glDriverPaths}}"
+                export __EGL_VENDOR_LIBRARY_FILENAMES="''${__EGL_VENDOR_LIBRARY_FILENAMES:-${mesa64}/share/glvnd/egl_vendor.d/50_mesa.json}"
 
                 ${lib.optionalString cfg.n2n.enable ''
                   # n2n edge inside the sandbox (own netns + slirp4netns
