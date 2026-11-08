@@ -1,0 +1,17 @@
+{
+  "android": {
+    "backend": "gamenative",
+    "gamenative": {
+      "containerConfig": {
+        "executablePath": "FindTheNeedle.exe"
+      }
+    },
+    "schema": 1
+  },
+  "appid": 5160800,
+  "cids": [
+    "bafybeifhtpeffvahvlcocibbmmbc2o3zzw5kytfhc636jp5ys42os22riy"
+  ],
+  "description": "Find The Needle (Needless Games 2026, Early Access haystack-digging automation sim, Godot 4 via Proton)",
+  "runtime": "proton"
+}
