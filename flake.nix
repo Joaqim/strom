@@ -255,6 +255,10 @@
             type = "app";
             program = "${scripts.launcher}/bin/strom-launcher";
           };
+          pin-ipfs = {
+            type = "app";
+            program = "${scripts.pin-ipfs}/bin/pin-ipfs";
+          };
           strom-launch = {
             type = "app";
             program = "${scripts.strom-launch}/bin/strom-launch";
