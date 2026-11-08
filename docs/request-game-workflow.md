@@ -195,8 +195,21 @@ otherwise Phase 1 only:
    `nix-store --gc` and removing `tmp/` from completed worktrees
    usually frees enough.
 1. Download the asset to the worktree's `tmp/`.
-2. `nix store add-file --hash-algo sha256 --name <name> tmp/<file>` to
-   seed the FOD output path.
+2. Compute the flat hash for the recipe, then seed the store. A
+   single-file `fetchIpfs` FOD checks the plain flat sha256 of the
+   content, so derive `hash` from `sha256sum`:
+
+       nix hash convert --to sri sha256:$(sha256sum tmp/<file> | cut -d' ' -f1)
+
+   `nix store add-file --hash-algo sha256 --name <name> tmp/<file>` also
+   seeds a copy into the store, with a caveat: it records a NAR-mode
+   digest, not the flat one (measured: the seeded path is not the FOD's
+   output path), so the FOD still fetches from the network, and the
+   `got:` value in its hash-mismatch error is the correct flat SRI hash.
+   When a local gateway already serves the asset (for example it was
+   just pinned on a local daemon), skip seeding and build with
+   `STROM_IPFS_GATEWAYS=http://127.0.0.1:8080 nix build .#<slug>` so the
+   FOD fetches from there.
 3. Write `games/<slug>/default.nix` with `cid = "PENDING_UPLOAD"`,
    real `fallbackUrl`, hash, name.
 4. `nix fmt`, `python3 scripts/sync-metadata.py`,
@@ -434,6 +447,23 @@ the stage commit becomes a master `init`:
    `lib/mk-game.nix` revision may make this a hard assertion
    (`runtime = "proton"` + empty `saveLocations` -> eval error) once
    every existing proton game is audited.
+
+Host GL-stack note for `runtime = "native"`: the launch chain brings
+up the gamescope compositor inside the sandbox, after the launcher
+script exports the loader environment, and a host whose driver build
+does not match what the sandbox can load leaves the compositor without
+a usable device — gamescope aborts at `vkCreateInstance` with -9 (the
+loader found no drivers), or renders a black frame with no crash. As of
+patch `120e63d`, the launcher exports the four loader variables
+(`VK_DRIVER_FILES`, `GBM_BACKENDS_PATH`, `LIBGL_DRIVERS_PATH`,
+`__EGL_VENDOR_LIBRARY_FILENAMES`) before exec'ing gamescope, pointing
+at the flake's own mesa with the host's `/run/opengl-driver` entries
+appended and `:-` defaults, so a host-provided value still wins. A
+manually provided value must name resolved `/nix/store/...` paths: the
+sandbox mounts the store but not the checkout, so a checkout-relative
+symlink (a `tmp/mesa64 -> /nix/store/...` convenience link) is not
+openable where gamescope runs, the loader then finds no drivers, and
+gamescope aborts with `vkCreateInstance -9`.
 
 When all three gates clear, the stage branch is rebased + amended
 (`stage (...)` -> `init`), force-pushed to update the rad branch, then

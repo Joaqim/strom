@@ -136,6 +136,52 @@
   (in `games/fear` it is documented SecuROM debris). It has NOT been audited per game, so
   if a GOG title misbehaves with missing assets, check this first.
 
+## GOG makeself/mojo installers (native Linux): unzip the .sh directly
+
+- GOG native-Linux installers are makeself/mojosetup `.sh` files: a
+  shell-script header followed by a zip archive. Plain `unzip` extracts
+  the payload but exits 1 on the header ("extra bytes at beginning or
+  within zipfile"), so run `unzip -q <installer> || true`; the game lands
+  under `data/noarch/game/`. Copy that subtree into `$out`.
+- Strip the `goggame-*.info` / `goggame-*.hashdb` galaxy shim files from
+  the installed tree; nothing in the game reads them.
+- Unity builds may carry Stadia-only plugins (`libunitystadia*.so` in
+  `Darkwood_Data/Plugins/`-style paths), whose NEEDED set includes
+  Google's `libggp.so`, which is not distributable outside Stadia and not
+  in nixpkgs. Delete the plugins rather than growing an
+  `autoPatchelfIgnoreMissingDeps` entry for `libggp.so`: the game runs
+  without them (verified headlessly for darkwood), and the ignore list
+  would also silence any future genuinely-missing dependency.
+- A 7-Zip archive using method 93 (LZMA) makes Info-ZIP `unzip` exit 81;
+  use `p7zip` for those. See `games/gloomwood` (stage branch, pending
+  maintainer merge).
+
+## Unity players under gamescope
+
+- gamescope sanitizes `SDL_VIDEODRIVER` out of the environment of the
+  command it runs (measured on gamescope 3.16.25): a value set through
+  the recipe's `env` or at launch is gone by the time the game starts,
+  while unrelated variables survive. To force an SDL video driver,
+  export it from `runScript`, which runs as gamescope's child and execs
+  the game after the sanitization.
+- Do not set `gamescope.flags."--expose-wayland"` for a Unity SDL2
+  build: SDL selects the wayland backend for the window, the engine then
+  asks SDL for X11 window info to build its graphics surface, and the
+  player aborts ("Error getting system window info: Invalid window",
+  then a segfault). Unexposed, SDL lands on gamescope's Xwayland, which
+  the player handles.
+- A Unity 2021.3 Linux player whose graphics init falls back to Vulkan
+  can segfault under gamescope at the first window resize (SIGSEGV in
+  UnityPlayer via the SDL window-info path; reproduced inside the strom
+  sandbox and under a standalone headless gamescope). Check the
+  Player.log for the build's intended renderer before assuming a
+  packaging bug: when it is OpenGL Core, pass `-force-glcore` in
+  `executableArgs` and include `pkgs.mesa` in the
+  `env.LD_LIBRARY_PATH` set so glvnd finds mesa's GLX vendor. That is
+  the build's intended renderer, not a degraded one.
+- Worked example: `games/darkwood` (stage branch, pending maintainer
+  merge).
+
 ## Verify headless; never fullscreen or non-gamescope GUIs on `DISPLAY=:0`
 
 - **Normal package verification runs gamescope HEADLESS**, not on the operator's seat: launch the game with gamescope's headless backend plus the screenshot sidecar (`STROM_AGENT_DEBUG=1`, see `lib/screenshot.nix` / `lib/screenshot-sidecar.sh`). gamescope renders offscreen and the sidecar captures PNG frames from the nested `gamescope-*` wayland socket — the operator's `DISPLAY=:0` session is never touched.
@@ -225,7 +271,9 @@
 ## IPFS pinning only after testing
 
 - Game files must be IPFS-pinned (on at least one reachable node) before they're useful to other users. **Don't pin a multi-GB asset to a remote/public node until interactive testing has confirmed the package works** - wasted bandwidth if the package never runs.
-- Phase 1 (stage): download -> hash -> `nix store add-file --hash-algo sha256 --name <name> /path/to/file` (seeds the local store with the file under fetchIpfs's expected output path) -> write `default.nix` with `cid = "$HASH"` a real CID you can get by `ipfs add --only-hash --raw-leaves`. Build verifies locally because the FOD output path is already realized.
+- Phase 1 (stage): download -> hash -> seed -> write `default.nix` with a real CID you can get by `ipfs add --only-hash --raw-leaves`.
+  The `hash` a single-file fetchIpfs FOD wants is the plain flat sha256 of the content: derive it with `nix hash convert --to sri sha256:<sha256sum hex>`, not from a seeded store path.
+  `nix store add-file --hash-algo sha256 --name <name> /path/to/file` does seed a copy into the store, but it records a NAR-mode digest, not the flat one (measured: the seeded path is not the FOD's output path), so the FOD still fetches from the network — and on hash mismatch its `got:` value IS the correct flat SRI hash. On a machine with a local gateway already serving the asset (e.g. it was just pinned on a local daemon), skip seeding entirely and build with `STROM_IPFS_GATEWAYS` pointed at that gateway.
 - Phase 2 (test): user runs `nix run .#<game>` and confirms it works.
 - Phase 3 (only after Phase 2 passes): pin the file on whatever IPFS node(s) the operator uses (public/pin host), update `cid` if it was still `PENDING_UPLOAD`, rebuild. The exact pinning method is out of scope for this file - operator-specific.
 
