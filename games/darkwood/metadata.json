@@ -1,0 +1,12 @@
+{
+  "android": {
+    "backend": "unsupported",
+    "reason": "a Linux x86_64 ELF needs box64 plus a glibc rootfs, and no Android runtime app exposes a way to launch one",
+    "schema": 1
+  },
+  "cids": [
+    "bafybeidayvhvtes77d2jic7mvlr5h2m4gkbaj3bdjsgx6gegdmf3337jzi"
+  ],
+  "description": "Darkwood (native Linux, GOG v1.4.2 build 70215)",
+  "runtime": "native"
+}
