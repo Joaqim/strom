@@ -109,7 +109,8 @@ in
       # as the default: exporting STROM_GAMESCOPE_{NESTED,OUTPUT}_{WIDTH,HEIGHT}
       # in the session overrides them for every game at once (a system-wide
       # panel preference, e.g. 3440x1440), while recipes keep owning the
-      # defaults. Recipes that leave the option null emit no flag and stay
+      # defaults. STROM_GAMESCOPE_FULLSCREEN=1 appends --fullscreen the same
+      # way. Recipes that leave the option null emit no flag and stay
       # gamescope-default; add sizes to those via GAMESCOPE_ARGS.
       "--output-width" =
         if config.output-width != null then
@@ -271,6 +272,13 @@ in
         # so re-list it here to keep the stock scripts loading.
         export GAMESCOPE_SCRIPT_PATH="${config.pkgs.gamescope}/share/gamescope/scripts:${quietXwmScript}''${GAMESCOPE_SCRIPT_PATH:+:$GAMESCOPE_SCRIPT_PATH}"
         read -ra _gamescope_extra <<< "''${GAMESCOPE_ARGS:-}"
+        # System-wide fullscreen preference: STROM_GAMESCOPE_FULLSCREEN=1
+        # appends --fullscreen for every game. Additive, like GAMESCOPE_ARGS:
+        # a recipe already passing -f is unaffected, and agent-run headless
+        # verification keeps it unset per the no-fullscreen rule.
+        if [ "''${STROM_GAMESCOPE_FULLSCREEN:-0}" = "1" ]; then
+          _gamescope_extra+=(--fullscreen)
+        fi
         gamescope \
           ${lib.concatMapStringsSep " \\\n  " shellEscape flagArgs} \
           "''${_gamescope_extra[@]}" \
