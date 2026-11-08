@@ -3,9 +3,10 @@
 #
 # Usage:
 #   strom-screenshot <slug>
-#       Writes ~/.strom/<slug>/screenshots/manual-<UTC>.png and prints
-#       the absolute path on stdout. Exits non-zero if no nested
-#       gamescope socket is recorded for the slug.
+#       Writes $STROM_STATE_HOME/<slug>/screenshots/manual-<UTC>.png
+#       (default ~/.strom/<slug>/...) and prints the absolute path on
+#       stdout. Exits non-zero if no nested gamescope socket is
+#       recorded for the slug.
 #
 # The strom gamescope wrapper writes the active socket name to
 # `$STROM_GAMEDIR/.strom-wayland-display` whenever it starts (see
@@ -27,7 +28,7 @@ writeShellApplication {
       exit 2
     fi
     slug=$1
-    gamedir="''${HOME:-.}/.strom/$slug"
+    gamedir="''${STROM_STATE_HOME:-''${HOME:-.}/.strom}/$slug"
     marker="$gamedir/.strom-wayland-display"
 
     if [ ! -r "$marker" ]; then

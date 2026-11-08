@@ -25,7 +25,7 @@ writeShellApplication {
       exit 2
     fi
     slug=$1
-    gamedir="''${HOME:-.}/.strom/$slug"
+    gamedir="''${STROM_STATE_HOME:-''${HOME:-.}/.strom}/$slug"
 
     # Liveness: is the game actually running? The gamescope wrapper records
     # its nested wayland socket name on launch; if the socket is gone the
