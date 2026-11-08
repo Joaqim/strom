@@ -1,0 +1,39 @@
+{
+  "developers": [
+    "Freshly Baked Games LLC"
+  ],
+  "genres": [
+    "Action",
+    "Adventure",
+    "Indie",
+    "RPG"
+  ],
+  "hero": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1799840/1a209734951f53b019ec9fa03f835def14f2a968/header.jpg?t=1793982850",
+  "long": "Queen\u2019s Domain is a retro-fantasy action RPG. Washed up on the shores of the Isle of Neasied, you set out to find your father and uncover the dark heart of this mysterious isle.\u00a0\n\nWield the Legendary Holy Sword Endu to take flight from platform to platform, and discover an interconnected, labyrinthine world where secrets and dangers lurk around every corner.\u00a0\n\nFight action-oriented battles with a classic stamina meter, powerful charge attacks, weapon specific special attacks, and secondary throwing weapons. Level up, accessorize, and choose from a huge catalogue of melee weapons on your quest to fight your way through the hordes of monsters and powerful bosses awaiting you in the darkest depths of the isle.\u00a0\n\nFeatures:\nExplore an interconnected island filled with hidden secrets\n\nLovingly crafted retro-fantasy aesthetic\u00a0\n\nAction-combat with a stamina meter, special attacks, throwing weapons & more\n\nFly across gaps with your Holy Sword \u2013 use upgrades to fly further!\n\nDozens of hours of adventuring and exploration\n\n50+ melee weapons to discover, equip, and upgrade\n\nUse XP to level up, and eat delicious food to further increase your stats\n\n20+ types of secondary throwing weapons allow for varied strategies in combat\n\nOver 100 enemies, mini bosses, and bosses to defeat",
+  "lutris": "https://lutris.net/games/queens-domain/",
+  "name": "Queen's Domain",
+  "screenshots": [
+    "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1799840/d5d3eed2239ee8c3b218ee19e93d185d21ad17f0/ss_d5d3eed2239ee8c3b218ee19e93d185d21ad17f0.1920x1080.jpg?t=1793982850",
+    "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1799840/80fc7a0150f0e223c15771c170e1785e177fdce0/ss_80fc7a0150f0e223c15771c170e1785e177fdce0.1920x1080.jpg?t=1793982850",
+    "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1799840/d5a66c6f6124771268e892b624d81ba8d80e8d20/ss_d5a66c6f6124771268e892b624d81ba8d80e8d20.1920x1080.jpg?t=1793982850",
+    "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1799840/cebd8ec0eead3f1f81591c1eae7d9b49169a6a07/ss_cebd8ec0eead3f1f81591c1eae7d9b49169a6a07.1920x1080.jpg?t=1793982850",
+    "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1799840/00f613d2764e4f0f94a1a073793776066feef78a/ss_00f613d2764e4f0f94a1a073793776066feef78a.1920x1080.jpg?t=1793982850",
+    "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1799840/6b1ab33574516746e03a89afe25226ddb36df16e/ss_6b1ab33574516746e03a89afe25226ddb36df16e.1920x1080.jpg?t=1793982850",
+    "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1799840/b9b6f63d75e5a05c7d4663bb05118207c6055779/ss_b9b6f63d75e5a05c7d4663bb05118207c6055779.1920x1080.jpg?t=1793982850",
+    "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1799840/a864ff0077dce9b2523175db58d956f5fa9de88f/ss_a864ff0077dce9b2523175db58d956f5fa9de88f.1920x1080.jpg?t=1793982850"
+  ],
+  "short": "A retro-fantasy action RPG with brutal combat and traversal-focused exploration. Embark on a quest to find your father who disappeared on the mysterious Isle of Neasied, where sinister forces gather, secrets hide everywhere, and the sleeping Queen has begun to stir\u2026",
+  "steam_appid": 1799840,
+  "tags": [
+    "Single-player",
+    "Steam Achievements",
+    "Full controller support",
+    "DualShock Controller Support",
+    "DualShock Controller Support",
+    "DualSense Controller Support",
+    "DualSense Controller Support",
+    "Steam Cloud",
+    "Family Sharing"
+  ],
+  "year": 2026
+}

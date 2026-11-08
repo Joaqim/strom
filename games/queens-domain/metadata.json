@@ -1,0 +1,17 @@
+{
+  "android": {
+    "backend": "gamenative",
+    "gamenative": {
+      "containerConfig": {
+        "executablePath": "QueensDomain/Binaries/Win64/QueensDomain-Win64-Shipping.exe"
+      }
+    },
+    "schema": 1
+  },
+  "appid": 1799840,
+  "cids": [
+    "bafybeiavo75kjo336omu5b3mv6y5edjp6n7wfj47fx7zqi6h5jsw2f4suq"
+  ],
+  "description": "Queen's Domain (Freshly Baked Games LLC 2026, retro-fantasy action RPG, Unreal Engine 4 via Proton)",
+  "runtime": "proton"
+}
