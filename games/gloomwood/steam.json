@@ -1,0 +1,40 @@
+{
+  "developers": [
+    "Dillon Rogers",
+    "David Szymanski",
+    "Nate Berens",
+    "Thomas Porta"
+  ],
+  "genres": [
+    "Action",
+    "Indie",
+    "Early Access"
+  ],
+  "hero": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1150760/7a2817598e2e5882de17299ce013638a2b35a3f9/header.jpg?t=1779956549",
+  "long": "Gloomwood is a stealth horror FPS that follows your mysterious abduction to a forgotten, twisted Victorian metropolis in the midst of a horrifying transformation. Wield your canesword and take to the shadows as you uncover the accursed mystery hidden within the fog.\nThe producers of DUSK, AMID EVIL, ULTRAKILL and FAITH bring you a frightening, gothic immersive sim full of haunted streets, dark tunnels and decadent mansions.\n\nAn intricate, hand-crafted city with freeform exploration - from towering rooftops down to hidden passages, the routes you take and paths you make, are your choice.\n\nA detailed stealth and sound system that tracks your light visibility and propagates noise accurately through the world. Tread lightly. Or prepare to get loud.\n\nA unique arsenal to meet any situation - a stealthy canesword, six-shot revolver, folding shotgun, hand-placed traps, rope-slinging harpoon rifle and more.\n\nIn-depth player interactivity, from leaning to eavesdrop, peeking through door cracks, checking the bullets in your firearms and mantling onto ledges.\n\nA mob of ghastly denizens and monsters with acute senses, like the sharp-clawed Crowmen and the fearsome, cadaver-seeking Corpse Duster.\n\nGloomwood is full of objects to pick up, throw, climb, smash and use to your advantage.\nThere is more to this city than you can possibly imagine...",
+  "lutris": "https://lutris.net/games/gloomwood/",
+  "name": "Gloomwood",
+  "screenshots": [
+    "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1150760/ss_604f0cea89df5de01c432975d5cc44f09eaf70ba.1920x1080.jpg?t=1779956549",
+    "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1150760/ss_1185219be0131c1e0607ca3135f7967a110c1125.1920x1080.jpg?t=1779956549",
+    "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1150760/ss_2b29ec7354de8388a98c908bcf10d8ead2e1b607.1920x1080.jpg?t=1779956549",
+    "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1150760/ss_f68ac94d71acc4befa81383ffb10beeb1f5c8feb.1920x1080.jpg?t=1779956549",
+    "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1150760/ss_a3551865d1563d26e4820b0fb9c62622a37fa8a7.1920x1080.jpg?t=1779956549",
+    "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1150760/ss_c5f00deedb7420a783ccbec36d1d54072ec32ad4.1920x1080.jpg?t=1779956549",
+    "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1150760/ss_efe09bd9508fb682c3055101e2139c4aaaec730c.1920x1080.jpg?t=1779956549",
+    "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1150760/ss_b7489271496226c6063b2b91facbe2ca638026f5.1920x1080.jpg?t=1779956549"
+  ],
+  "short": "Trapped in a dark, Victorian city consumed by an ancient curse, you must plan your survival and daring escape using nothing but stealth, an arsenal of eccentric weapons, and your wit in this haunting adventure inspired by the immersive sims and survival horror greats of the late 90s and early 2000s.",
+  "steam_appid": 1150760,
+  "tags": [
+    "Single-player",
+    "Full controller support",
+    "DualShock Controller Support",
+    "DualShock Controller Support",
+    "DualSense Controller Support",
+    "DualSense Controller Support",
+    "Steam Cloud",
+    "Family Sharing"
+  ],
+  "year": 2022
+}

@@ -1,0 +1,17 @@
+{
+  "android": {
+    "backend": "gamenative",
+    "gamenative": {
+      "containerConfig": {
+        "executablePath": "Gloomwood.exe"
+      }
+    },
+    "schema": 1
+  },
+  "appid": 1150760,
+  "cids": [
+    "bafybeielhwosgtn2heuvbhozoee2u3msrcs2kisd3nn4denthbofrwka4i"
+  ],
+  "description": "Gloomwood (New Blood Interactive 2022, Victorian stealth immersive sim, Unity Mono via Proton)",
+  "runtime": "proton"
+}
