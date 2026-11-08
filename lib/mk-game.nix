@@ -213,7 +213,7 @@ let
       options = {
         name = mkOption {
           type = types.str;
-          description = "Game name (used for ~/.strom/<name>).";
+          description = "Game name (used for \$STROM_STATE_HOME/<name>, default ~/.strom/<name>).";
         };
         src = mkOption {
           type = types.package;
@@ -270,7 +270,8 @@ let
           type = types.listOf types.str;
           description = ''
             Paths under drive_c/users/steamuser/ that get relocated to
-            ~/.strom/<name>/ so prefix wipes don't take user progress.
+            $STROM_STATE_HOME/<name>/ (default ~/.strom/<name>/) so prefix
+            wipes don't take user progress.
             Required for runtime = "proton"; set to [ ] only if the
             engine writes saves next to its binary (those persist via
             the overlay upper).
@@ -449,11 +450,12 @@ let
               };
 
               preHook = ''
-                STROM_GAMEDIR="''${HOME:-.}/.strom/${cfg.name}"
-                STROM_COMPATDATA="''${HOME:-.}/.strom/.compatdata/${cfg.name}"
+                STROM_STATE_HOME="''${STROM_STATE_HOME:-''${HOME:-.}/.strom}"
+                STROM_GAMEDIR="$STROM_STATE_HOME/${cfg.name}"
+                STROM_COMPATDATA="$STROM_STATE_HOME/.compatdata/${cfg.name}"
                 STROM_CACHEDIR="''${HOME:-.}/.cache/strom/${cfg.name}"
                 STROM_OVERLAY=/tmp/.strom-overlay
-                export STROM_GAMEDIR STROM_COMPATDATA STROM_CACHEDIR STROM_OVERLAY
+                export STROM_STATE_HOME STROM_GAMEDIR STROM_COMPATDATA STROM_CACHEDIR STROM_OVERLAY
                 mkdir -p "$STROM_GAMEDIR" "$STROM_COMPATDATA" "$STROM_CACHEDIR" "$STROM_GAMEDIR/.strom-overlay/upper" \
                   ${lib.optionalString (cfg.runtime == "proton") ''
                     "$STROM_CACHEDIR/umu" "$STROM_CACHEDIR/umu-protonfixes" "$HOME/.cache/wine"
@@ -674,7 +676,7 @@ let
         proton = mkOption {
           type = wrapperType ./proton.nix {
             config = {
-              compatDataPath = "\${HOME:-.}/.strom/.compatdata/${cfg.name}/0";
+              compatDataPath = "\${STROM_STATE_HOME:-\${HOME:-.}/.strom}/.compatdata/${cfg.name}/0";
               saveLocations = cfg.saveLocations;
             };
           };
