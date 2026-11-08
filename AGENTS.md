@@ -112,6 +112,7 @@
 - **Never `pkgs.wine` / `pkgs.wineWowPackages.*` / `pkgs.wineWow64Packages.*`** in `default.nix` files. Use the project's Proton derivation: `proton = pkgs.callPackage ../../pkgs/proton.nix { };` then `${proton}/files/bin/wine`.
 - For prefix registry tweaks: edit `system.reg` / `user.reg` files directly with `sed`/`cat` from preRun (after the prefix exists), NOT via `wine reg add`.
 - For `winetricks`-style verb installs (vcrun, dotnet, dxvk, etc.): manually drop the DLLs into the prefix's `system32`/`syswow64` from buildScript or preRun. Don't shell out to winetricks.
+- Steam-emu packs that ship a real (patched) `steamclient64.dll` must set `env.WINEDLLOVERRIDES = "lsteamclient="`. Proton's builtin lsteamclient hook-patches the exports of a loaded native steamclient; on emu-modified binaries the `CreateInterface` trampoline misaligns and leaves `0x60` (illegal in 64-bit mode) on the export's first byte, so `SteamAPI_Init` dies with SIGILL inside steamclient (find-the-needle, measured 2026-11-08 on GE-Proton11-1).
 
 ## GOG Inno installers: never delete `__support` before merging it
 

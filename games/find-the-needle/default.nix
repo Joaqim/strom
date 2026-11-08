@@ -93,6 +93,16 @@ self.lib.mkGame { inherit lib pkgs; } {
     install -C -m0644 "$GAMEDIR/steamclient64.dll" "$__strom_steam/steamclient64.dll"
   '';
 
+  # Proton's builtin lsteamclient hook-patches the exports of a loaded
+  # native steamclient64.dll, laid out for Valve's genuine client. On
+  # tenoke's modified binary the CreateInterface trampoline lands two
+  # bytes off and leaves 0x60 (pusha, illegal in 64-bit mode) as the
+  # export's first byte, so SteamAPI_Init dies with SIGILL at
+  # steamclient64+0xbe460 (wine-staging 11.0 / GE-Proton11-1,
+  # measured 2026-11-08). Keeping the builtin out of the process lets
+  # the emu's own client serve CreateInterface.
+  env.WINEDLLOVERRIDES = "lsteamclient=";
+
   gamescope = {
     output-width = 1920;
     output-height = 1080;
