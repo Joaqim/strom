@@ -47,6 +47,24 @@ self.lib.mkGame { inherit lib pkgs; } {
     mkdir -p "$out"
     7zz x -y -o"$TMPDIR/extract" "$src" > /dev/null
     cp -r "$TMPDIR/extract/Find The Needle/"* "$out"/
+
+    # The shipped override.cfg pins Godot's D3D12 backend, which under
+    # Proton routes through vkd3d-proton; the SPIR-V vkd3d emits for
+    # this game's compute shaders segfaults RADV 26.1.5 in
+    # radv_shader_spirv_to_nir (rad issue 7bf4b8c1bd31a8a41b97834d2f622b0a39b54024).
+    # Godot's native Vulkan backend emits its own SPIR-V, which the
+    # same driver compiles fine (operator-verified: rendering works and
+    # game logic runs past setup2), so replace the file with the
+    # operator's hand-tuned variant: vulkan primary, d3d12 fallback.
+    cat > "$out/override.cfg" <<'EOF'
+    [rendering]
+
+    rendering_device/driver.windows="vulkan"
+    rendering_device/fallback_to_vulkan=false
+    rendering_device/fallback_to_d3d12=true
+    rendering_device/fallback_to_opengl3=false
+    driver/threads/thread_model.template=2
+    EOF
   '';
 
   runtime = "proton";
@@ -54,12 +72,26 @@ self.lib.mkGame { inherit lib pkgs; } {
   executable = "FindTheNeedle.exe";
 
   # Godot 4 export: user:// maps to
-  # AppData/Roaming/Godot/app_userdata/<project name>. The pck is
-  # encrypted (no GDPC magic, no plaintext directory), so the project
-  # name cannot be read short of running the game; "Find The Needle"
-  # is the display-name guess. Phase 2 interactive audit (launch,
-  # write a save, find newer dirs) still pending with the operator.
-  saveLocations = [ "AppData/Roaming/Godot/app_userdata/Find The Needle" ];
+  # AppData/Roaming/Godot/app_userdata/<product name>. The pck is
+  # encrypted (no GDPC magic, no plaintext directory), so the product
+  # name cannot be read from the tree; observed live in the prefix
+  # after the operator's runs: app_userdata/FindTheNeedle/ (one word,
+  # godot log dir beneath it) — not the display name "Find The Needle".
+  saveLocations = [ "AppData/Roaming/Godot/app_userdata/FindTheNeedle" ];
+
+  # tenoke's Steamworks layer loads its steamclient by ABSOLUTE path
+  # (C:\Program Files (x86)\Steam\steamclient64.dll, wine trace in the
+  # launch logs) instead of from the exe dir, so WINEDLLOVERRIDES
+  # cannot redirect it — overrides only intercept load-by-name. Drop
+  # the game tree's steamclient64.dll at that prefix path from preRun
+  # (AGENTS.md's sanctioned manual-DLL-drop mechanism, automated).
+  # install -C skips the copy while the prefix copy still matches the
+  # game tree, so relaunches do not rewrite the file.
+  preRun = ''
+    __strom_steam="$STROM_COMPATDATA/0/pfx/drive_c/Program Files (x86)/Steam"
+    mkdir -p "$__strom_steam"
+    install -C -m0644 "$GAMEDIR/steamclient64.dll" "$__strom_steam/steamclient64.dll"
+  '';
 
   gamescope = {
     output-width = 1920;
