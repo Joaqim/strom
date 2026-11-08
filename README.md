@@ -200,6 +200,11 @@ networking.firewall.allowedTCPPorts = [ 4001 ];
 networking.firewall.allowedUDPPorts = [ 4001 ]; # QUIC
 ```
 
+Mirror operators can skip this block: the mirror module below already
+applies all of these values via mkDefault. It is only needed for a
+standalone kubo node (no mirror) or to pin values against future default
+drift.
+
 Rebuild, then verify the daemon is running:
 
 ```bash
@@ -299,6 +304,9 @@ contents:
     enable = true;
     # optional: override the poll interval (default: hourly)
     # interval = "daily";
+    # recommended: kubo HTTP gateway port. The current default is 8080
+    # (deprecation-warned at rebuild); a future release flips it to 8330.
+    # gatewayPort = 8330;
   };
 }
 ```
@@ -306,6 +314,26 @@ contents:
 The module enables kubo with sane defaults, opens the swarm ports, and
 creates a systemd timer (`strom-ipfs-pin`) that resolves the IPNS name and
 recursively pins everything underneath it.
+
+The kubo HTTP gateway is bound to loopback on `gatewayPort`. The current
+default is still 8080, kubo's collision-prone port, kept only so a flake
+bump does not silently move existing mirrors: while the effective gateway
+is the module-rendered 8080 address, every rebuild raises an evaluation
+warning with the migration line, and a future release will change the
+default. 8330 is the recommended value (inside the IANA-unassigned block
+8323-8350 and below the Linux ephemeral port range, so neither a
+registered service nor a kernel allocation can claim it); operators on
+8080 migrate with `services.strom-ipfs-mirror.gatewayPort = 8330;`.
+Operators who assign their own full
+`services.kubo.settings.Addresses.Gateway` have taken control of the
+address and get no warning.
+
+To prefer your mirror in `fetchIpfs` builds, point the injectable
+gateway list at it:
+
+```bash
+STROM_IPFS_GATEWAYS=http://127.0.0.1:8330 nix build .#xenogears
+```
 
 ### Using a CID in a game package
 
