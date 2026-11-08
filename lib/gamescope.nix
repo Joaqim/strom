@@ -47,18 +47,43 @@ in
     output-width = mkOption {
       type = types.nullOr types.int;
       default = null;
+      description = ''
+        Presentation width gamescope scales the nested image to. Unset
+        (the default) lets the gamescope window match the output. When a
+        recipe pins it, the value is a launch-time default:
+        STROM_GAMESCOPE_OUTPUT_WIDTH in the session overrides it for
+        every game at once, so a deployment can set a panel-wide
+        preference without touching recipes.
+      '';
     };
     output-height = mkOption {
       type = types.nullOr types.int;
       default = null;
+      description = ''
+        Presentation height gamescope scales the nested image to. Unset
+        (the default) lets the gamescope window match the output.
+        STROM_GAMESCOPE_OUTPUT_HEIGHT overrides the recipe default at
+        launch time.
+      '';
     };
     nested-width = mkOption {
       type = types.nullOr types.int;
       default = null;
+      description = ''
+        Width of the virtual display the game renders into (what the
+        game's resolution settings list modes against). Unset means
+        gamescope's own default. STROM_GAMESCOPE_NESTED_WIDTH overrides
+        the recipe default at launch time.
+      '';
     };
     nested-height = mkOption {
       type = types.nullOr types.int;
       default = null;
+      description = ''
+        Height of the virtual display the game renders into. Unset means
+        gamescope's own default. STROM_GAMESCOPE_NESTED_HEIGHT overrides
+        the recipe default at launch time.
+      '';
     };
 
     command = mkOption {
@@ -80,10 +105,32 @@ in
     binName = lib.mkDefault "gamescope-wrapper";
 
     gamescopeFlags = {
-      "--output-width" = if config.output-width != null then toString config.output-width else null;
-      "--output-height" = if config.output-height != null then toString config.output-height else null;
-      "--nested-width" = if config.nested-width != null then toString config.nested-width else null;
-      "--nested-height" = if config.nested-height != null then toString config.nested-height else null;
+      # Sizes render as shell parameter expansions with the recipe value
+      # as the default: exporting STROM_GAMESCOPE_{NESTED,OUTPUT}_{WIDTH,HEIGHT}
+      # in the session overrides them for every game at once (a system-wide
+      # panel preference, e.g. 3440x1440), while recipes keep owning the
+      # defaults. Recipes that leave the option null emit no flag and stay
+      # gamescope-default; add sizes to those via GAMESCOPE_ARGS.
+      "--output-width" =
+        if config.output-width != null then
+          "\${STROM_GAMESCOPE_OUTPUT_WIDTH:-${toString config.output-width}}"
+        else
+          null;
+      "--output-height" =
+        if config.output-height != null then
+          "\${STROM_GAMESCOPE_OUTPUT_HEIGHT:-${toString config.output-height}}"
+        else
+          null;
+      "--nested-width" =
+        if config.nested-width != null then
+          "\${STROM_GAMESCOPE_NESTED_WIDTH:-${toString config.nested-width}}"
+        else
+          null;
+      "--nested-height" =
+        if config.nested-height != null then
+          "\${STROM_GAMESCOPE_NESTED_HEIGHT:-${toString config.nested-height}}"
+        else
+          null;
       # NOTE: --virtual-connector-strategy=PerWindow was previously
       # set here to work around ValveSoftware/gamescope#1456 (the
       # CWaylandInputThread::ThreadFunc SingleApplication race during
