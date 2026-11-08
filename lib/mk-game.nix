@@ -80,9 +80,10 @@ let
       # keeps every loader on the one driver build that matches the FHS
       # glibc, whatever the host has installed. The mesa store paths
       # are absolute, so drivers load whether or not mesa is an
-      # fhsTargetPkg. Anything outside this set (asahi, dzn, nvidia
-      # proprietary) stays reachable through a host-provided value for
-      # the same variables, which the inner script honors.
+      # fhsTargetPkg. Drivers outside this set (asahi, dzn, nvidia
+      # proprietary) keep coming from the host /run/opengl-driver
+      # entries the inner script appends, and a host-provided value
+      # for the same variables still overrides the whole default.
       mesa64 = pkgs.mesa;
       mesa32 = pkgs.pkgsi686Linux.mesa;
       vulkanIcdDrivers = [
@@ -566,14 +567,46 @@ let
                 export MESA_SHADER_CACHE_DIR="$GAMECACHE"
                 export DXVK_STATE_CACHE_PATH="$GAMECACHE"
 
-                # GL stack from the flake's mesa (see the comment at
-                # vulkanDriverFiles above). The :- defaults leave
-                # host-provided values (custom GPU stack, debugging) in
-                # charge.
-                export VK_DRIVER_FILES="''${VK_DRIVER_FILES:-${vulkanDriverFiles}}"
-                export GBM_BACKENDS_PATH="''${GBM_BACKENDS_PATH:-${mesa64}/lib/gbm}"
-                export LIBGL_DRIVERS_PATH="''${LIBGL_DRIVERS_PATH:-${glDriverPaths}}"
-                export __EGL_VENDOR_LIBRARY_FILENAMES="''${__EGL_VENDOR_LIBRARY_FILENAMES:-${mesa64}/share/glvnd/egl_vendor.d/50_mesa.json}"
+                # GL stack from the flake's mesa, then the host
+                # /run/opengl-driver tree, so driver stacks that ship
+                # only on the host (nvidia proprietary) stay
+                # enumerable (see the comment at vulkanDriverFiles
+                # above). Host entries that need a newer glibc than
+                # the FHS provides fail to load and are skipped; the
+                # flake entries carry the device. The :- defaults
+                # leave host-provided values (custom GPU stack,
+                # debugging) in charge.
+                __strom_host_vk=""
+                __strom_host_gbm=""
+                __strom_host_dri=""
+                __strom_host_egl=""
+                for __strom_dir in /run/opengl-driver /run/opengl-driver-32; do
+                  if [ -d "$__strom_dir/share/vulkan/icd.d" ]; then
+                    for f in "$__strom_dir"/share/vulkan/icd.d/*.json; do
+                      if [ -e "$f" ]; then
+                        __strom_host_vk="$__strom_host_vk:$f"
+                      fi
+                    done
+                  fi
+                  if [ -d "$__strom_dir/share/glvnd/egl_vendor.d" ]; then
+                    for f in "$__strom_dir"/share/glvnd/egl_vendor.d/*.json; do
+                      if [ -e "$f" ]; then
+                        __strom_host_egl="$__strom_host_egl:$f"
+                      fi
+                    done
+                  fi
+                  if [ -d "$__strom_dir/lib/gbm" ]; then
+                    __strom_host_gbm="$__strom_host_gbm:$__strom_dir/lib/gbm"
+                  fi
+                  if [ -d "$__strom_dir/lib/dri" ]; then
+                    __strom_host_dri="$__strom_host_dri:$__strom_dir/lib/dri"
+                  fi
+                done
+                export VK_DRIVER_FILES="''${VK_DRIVER_FILES:-${vulkanDriverFiles}$__strom_host_vk}"
+                export GBM_BACKENDS_PATH="''${GBM_BACKENDS_PATH:-${mesa64}/lib/gbm$__strom_host_gbm}"
+                export LIBGL_DRIVERS_PATH="''${LIBGL_DRIVERS_PATH:-${glDriverPaths}$__strom_host_dri}"
+                export __EGL_VENDOR_LIBRARY_FILENAMES="''${__EGL_VENDOR_LIBRARY_FILENAMES:-${mesa64}/share/glvnd/egl_vendor.d/50_mesa.json$__strom_host_egl}"
+                unset __strom_host_vk __strom_host_gbm __strom_host_dri __strom_host_egl __strom_dir f
 
                 ${lib.optionalString cfg.n2n.enable ''
                   # n2n edge inside the sandbox (own netns + slirp4netns
