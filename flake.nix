@@ -228,24 +228,31 @@
       # re-expose existing derivations from legacyPackages -- nothing
       # rebuilds against `final`. The system is read from `prev`:
       # `filterAttrs` forces the body eagerly, and `final.system` there
-      # would loop through the fixpoint.
+      # would loop through the fixpoint. The `or null` guard keeps the
+      # overlay total: consumer overlays ride every package-set
+      # instantiation (pkgsi686Linux, pkgsMusl), where an unguarded
+      # legacyPackages.${system} crashes on unsupported systems; there
+      # the overlay exposes nothing.
       overlays.default =
         final: prev:
         let
-          lp = self.legacyPackages.${prev.stdenv.hostPlatform.system};
+          lp = self.legacyPackages.${prev.stdenv.hostPlatform.system} or null;
         in
-        {
-          strom = lp.games;
-        }
-        // nixpkgs.lib.filterAttrs (name: _: nixpkgs.lib.hasPrefix "strom-" name) lp.scripts
-        // {
-          strom-gui = lp.scripts.gui;
-          strom-launcher = lp.scripts.launcher;
-          strom-screenshot = lp.scripts.screenshot;
-          strom-bundle = lp.scripts.bundle;
-          strom-pin-ipfs = lp.scripts.pin-ipfs;
-          strom-publish-ipns = lp.scripts.publish-ipns;
-        };
+        if lp == null then
+          { }
+        else
+          {
+            strom = lp.games;
+          }
+          // nixpkgs.lib.filterAttrs (name: _: nixpkgs.lib.hasPrefix "strom-" name) lp.scripts
+          // {
+            strom-gui = lp.scripts.gui;
+            strom-launcher = lp.scripts.launcher;
+            strom-screenshot = lp.scripts.screenshot;
+            strom-bundle = lp.scripts.bundle;
+            strom-pin-ipfs = lp.scripts.pin-ipfs;
+            strom-publish-ipns = lp.scripts.publish-ipns;
+          };
 
       # Android outputs. Thin aliases onto each game's `android`
       # submodule (see lib/android/default.nix) so the useful paths are
