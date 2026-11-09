@@ -10,6 +10,10 @@ crafted URL can never run an arbitrary ``nix`` target), then:
    include the IPFS asset download emitted by lib/fetch-ipfs.nix), then
 2. launches it with ``nix run`` (instant, everything is already in the store).
 
+A ``--no-gamescope`` flag, or ``STROM_NO_GAMESCOPE`` in the environment,
+selects the game's ``.no-gamescope`` passthru instead: the game renders
+directly on the host display, not nested in a per-game gamescope.
+
 Progress UI degrades gracefully: zenity window -> notify-send phases ->
 plain stderr.
 """
@@ -91,7 +95,7 @@ class Progress:
             self.proc = None
 
 
-def build_with_progress(slug: str, prog: Progress) -> bool:
+def build_with_progress(attr: str, prog: Progress) -> bool:
     """Run ``nix build`` for the game, feeding progress events to the UI.
     Returns True on success."""
     cmd = [
@@ -101,7 +105,7 @@ def build_with_progress(slug: str, prog: Progress) -> bool:
         "--print-build-logs",
         "--log-format",
         "internal-json",
-        f"{FLAKE_REF}#{slug}",
+        f"{FLAKE_REF}#{attr}",
     ]
     proc = subprocess.Popen(cmd, stderr=subprocess.PIPE, text=True)
     assert proc.stderr is not None
@@ -149,27 +153,32 @@ def notify_error(slug: str, msg: str) -> None:
 
 
 def main(argv: list[str]) -> int:
-    if len(argv) < 2:
-        print("usage: strom-launch strom://<slug>", file=sys.stderr)
+    no_gamescope = "--no-gamescope" in argv[1:] or bool(
+        os.environ.get("STROM_NO_GAMESCOPE")
+    )
+    args = [a for a in argv[1:] if a != "--no-gamescope"]
+    if not args:
+        print("usage: strom-launch [--no-gamescope] strom://<slug>", file=sys.stderr)
         return 2
 
-    slug = parse_slug(argv[1])
+    slug = parse_slug(args[0])
     manifest = json.loads(MANIFEST.read_text())
     if slug not in manifest:
         notify_error(slug, "unknown game (not in strom manifest)")
         return 1
 
     name = (manifest[slug].get("description") or slug).split("(", 1)[0].strip()
+    attr = slug + (".no-gamescope" if no_gamescope else "")
 
     prog = Progress(f"Launching {name}")
-    ok = build_with_progress(slug, prog)
+    ok = build_with_progress(attr, prog)
     prog.close()
     if not ok:
         notify_error(slug, "build/download failed")
         return 1
 
     # Everything is in the store now; this returns when the game exits.
-    result = subprocess.run(["nix", "run", f"{FLAKE_REF}#{slug}"], check=False)
+    result = subprocess.run(["nix", "run", f"{FLAKE_REF}#{attr}"], check=False)
     if result.returncode != 0:
         notify_error(slug, f"game exited with status {result.returncode}")
     return result.returncode

@@ -36,6 +36,25 @@ in
       '';
     };
 
+    noGamescope = lib.mkOption {
+      type = lib.types.bool;
+      default = false;
+      description = ''
+        Whether to run games without per-game gamescope, exported as
+        STROM_NO_GAMESCOPE=1 for every session. Both strom-launch and the
+        couch launcher then pick each game's `.no-gamescope` passthru,
+        rendering directly on the session compositor -- for seats where the
+        session itself is already a gamescope kiosk, or the host compositor
+        is preferred.
+
+        Known cost: strom-screenshot and strom-ip liveness checks rely on
+        gamescope's nested Wayland session and report running games as
+        not-running, and the Qt-based emulator runtimes (pcsx2, dolphin,
+        azahar) refuse to build without gamescope -- those games cannot be
+        launched this way.
+      '';
+    };
+
     stateDir = lib.mkOption {
       type = lib.types.nullOr lib.types.str;
       default = null;
@@ -98,6 +117,10 @@ in
         systemd.tmpfiles.rules = [
           "d \"${cfg.stateDir}\" 0750 ${cfg.stateDirUser} ${cfg.stateDirGroup} -"
         ];
+      })
+
+      (lib.mkIf cfg.noGamescope {
+        environment.sessionVariables.STROM_NO_GAMESCOPE = "1";
       })
     ]
   );
