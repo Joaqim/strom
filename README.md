@@ -155,24 +155,27 @@ in {
 
 ### Consuming strom packages via overlay
 
-Your own nixpkgs can carry strom's packages, so service modules get
-karrio-style defaults without reaching into the flake's package set:
+Your own nixpkgs can carry strom's packages, so service modules can
+default to the overlay's package without reaching into the flake's
+package set:
 
 ```nix
 # flake.nix inputs: strom.url = "github:kraftwerk-gaming/strom";
 pkgs = import nixpkgs { overlays = [ strom.overlays.default ]; };
 ```
 
-- every game wrapper and utility sits under `pkgs.strom`
-  (`pkgs.strom.loop-hero`, `pkgs.strom.strom-launch`, ...), with each
-  wrapper's passthru intact: `pkgs.strom.loop-hero.no-gamescope`
-- the `strom-*`-prefixed utilities are also exposed flat:
-  `pkgs.strom-launch`, `pkgs.strom-ip`, `pkgs.strom-run`
+- every game wrapper sits under `pkgs.strom`
+  (`pkgs.strom.loop-hero`, ...), with each wrapper's passthru intact:
+  `pkgs.strom.loop-hero.no-gamescope`
+- utilities are flat only, all uniformly `strom-*`:
+  `pkgs.strom-launch`, `pkgs.strom-ip`, `pkgs.strom-run`,
+  `pkgs.strom-gui`, `pkgs.strom-launcher`, `pkgs.strom-screenshot`,
+  `pkgs.strom-bundle`, `pkgs.strom-pin-ipfs`, `pkgs.strom-publish-ipns`
 - game slugs never appear at top level, so nixpkgs' own `factorio`,
   `doom`, ... are never shadowed
 
 A module option then reads:
-`default = pkgs.strom.strom-launch or pinnedStrom.strom-launch;`
+`default = pkgs.strom-launch or pinnedStrom.strom-launch;`
 
 ## Cloning via Radicle
 

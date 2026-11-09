@@ -213,14 +213,18 @@
 
       packages = forAllSystems (system: self.legacyPackages.${system}.games);
 
-      # Overlay for downstream modules: every game wrapper and utility
-      # under one `strom` namespace, so consumers write
-      # `pkgs.strom.<slug>` / `pkgs.strom.<utility>` and the passthru
-      # (`.no-gamescope`, `.apply`, `.override`) of each wrapper
-      # survives. Only the utilities already named `strom-*` are also
-      # added flat to top-level pkgs, where that prefix cannot collide
-      # with nixpkgs; game slugs (factorio, doom, ...) stay inside the
-      # namespace so real nixpkgs packages are never shadowed. Members
+      # Overlay for downstream modules: games under one `strom` namespace
+      # (`pkgs.strom.<slug>`, passthru — `.no-gamescope`, `.apply`,
+      # `.override` — of each wrapper intact), utilities flat at top level
+      # and uniformly `strom-*`: the three already-prefixed scripts plus
+      # attribute-level aliases for the rest (strom-gui = scripts.gui,
+      # strom-launcher = scripts.launcher, strom-screenshot =
+      # scripts.screenshot, strom-bundle = scripts.bundle, strom-pin-ipfs
+      # = scripts.pin-ipfs, strom-publish-ipns = scripts.publish-ipns),
+      # so every utility is reachable one way and nothing is duplicated.
+      # Aliases re-expose the same derivation — nothing wraps, nothing
+      # rebuilds; game slugs (factorio, doom, ...) never appear at top
+      # level, so real nixpkgs packages are never shadowed. Members
       # re-expose existing derivations from legacyPackages -- nothing
       # rebuilds against `final`. The system is read from `prev`:
       # `filterAttrs` forces the body eagerly, and `final.system` there
@@ -229,12 +233,19 @@
         final: prev:
         let
           lp = self.legacyPackages.${prev.stdenv.hostPlatform.system};
-          exposed = lp.games // lp.scripts;
         in
         {
-          strom = exposed;
+          strom = lp.games;
         }
-        // nixpkgs.lib.filterAttrs (name: _: nixpkgs.lib.hasPrefix "strom-" name) exposed;
+        // nixpkgs.lib.filterAttrs (name: _: nixpkgs.lib.hasPrefix "strom-" name) lp.scripts
+        // {
+          strom-gui = lp.scripts.gui;
+          strom-launcher = lp.scripts.launcher;
+          strom-screenshot = lp.scripts.screenshot;
+          strom-bundle = lp.scripts.bundle;
+          strom-pin-ipfs = lp.scripts.pin-ipfs;
+          strom-publish-ipns = lp.scripts.publish-ipns;
+        };
 
       # Android outputs. Thin aliases onto each game's `android`
       # submodule (see lib/android/default.nix) so the useful paths are
