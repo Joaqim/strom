@@ -18,6 +18,7 @@ PATCH_BRANCHES=(
     "3f2c2fa feat/state-dir"
     "8bf6056 docs-upstream-findings"
     "120e63d fix/mk-game-vulkan-icd"
+    "e203536 no-gamescope-launch"
 )
 
 die() {
