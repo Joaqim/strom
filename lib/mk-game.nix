@@ -425,23 +425,31 @@ let
                 "$STROM_BIND_PIPEWIRE" = "$STROM_BIND_PIPEWIRE";
                 "$STROM_BIND_PULSE" = "$STROM_BIND_PULSE";
               };
-              ro-bind-try = lib.genAttrs (lib.genList (n: "/tmp/.X11-unix/X${toString n}") 10) (p: p) // {
-                "$HOME/.local/share/vulkan" = "$HOME/.local/share/vulkan";
-                # GPU userspace drivers; -32 only exists on multilib hosts.
-                "/run/opengl-driver" = "/run/opengl-driver";
-                "/run/opengl-driver-32" = "/run/opengl-driver-32";
-                # SDL enumerates input devices via /run/udev/data.
-                "/run/udev" = "/run/udev";
-                # On a systemd-resolved host /etc/resolv.conf is a symlink
-                # to /run/systemd/resolve/stub-resolv.conf, which the curated
-                # /run does not carry, so the sandbox has NO nameserver and
-                # every online game fails with ERR_NAME_NOT_RESOLVED
-                # (measured with Chromium in games/pokemon-showdown). That
-                # directory holds only the resolver's generated resolv.conf
-                # files and its varlink query socket -- no secret, no control
-                # surface -- and is absent on hosts without resolved.
-                "/run/systemd/resolve" = "/run/systemd/resolve";
-              };
+              ro-bind-try =
+                lib.genAttrs (lib.genList (n: "/tmp/.X11-unix/X${toString n}") 10) (p: p)
+                // {
+                  "$HOME/.local/share/vulkan" = "$HOME/.local/share/vulkan";
+                  # GPU userspace drivers; -32 only exists on multilib hosts.
+                  "/run/opengl-driver" = "/run/opengl-driver";
+                  "/run/opengl-driver-32" = "/run/opengl-driver-32";
+                  # SDL enumerates input devices via /run/udev/data.
+                  "/run/udev" = "/run/udev";
+                  # On a systemd-resolved host /etc/resolv.conf is a symlink
+                  # to /run/systemd/resolve/stub-resolv.conf, which the curated
+                  # /run does not carry, so the sandbox has NO nameserver and
+                  # every online game fails with ERR_NAME_NOT_RESOLVED
+                  # (measured with Chromium in games/pokemon-showdown). That
+                  # directory holds only the resolver's generated resolv.conf
+                  # files and its varlink query socket -- no secret, no control
+                  # surface -- and is absent on hosts without resolved.
+                  "/run/systemd/resolve" = "/run/systemd/resolve";
+                }
+                # Host X auth cookie, no-gamescope builds only (source
+                # resolved in preHook; skipped when the candidate is
+                # missing, like the wayland socket).
+                // (lib.optionalAttrs (!cfg.enableGamescope) {
+                  "/tmp/.strom-xauthority" = "$STROM_XAUTH";
+                });
 
               # /tmp/.strom-overlay (not /strom/overlay): /tmp is RW from
               # the earlier --bind /tmp /tmp, a known-writable mountpoint.
@@ -471,6 +479,18 @@ let
                   ${lib.optionalString (cfg.runtime == "proton") ''
                     "$STROM_CACHEDIR/umu" "$STROM_CACHEDIR/umu-protonfixes" "$HOME/.cache/wine"
                   ''}
+
+                ${lib.optionalString (!cfg.enableGamescope) ''
+                  # No-gamescope builds reach the HOST X server through the
+                  # bound X sockets, but the curated /run hides its auth
+                  # cookie (mutter keeps it at /run/user/$UID/.mutter-
+                  # Xwaylandauth.*), so X11 clients arrive with no cookie.
+                  # Candidate for the ro-bind-try below; bind-try skips a
+                  # missing one, exactly like the wayland socket. Gamescope
+                  # builds never see this: their internal Xwayland owns auth.
+                  STROM_XAUTH="''${XAUTHORITY:-''${HOME:-.}/.Xauthority}"
+                  export STROM_XAUTH
+                ''}
 
                 # Clear any stale n2n IP marker from a previous run so a launch
                 # without $N2N_SUPERNODE can't report an old overlay IP. The
@@ -620,6 +640,16 @@ let
                 export LIBGL_DRIVERS_PATH="''${LIBGL_DRIVERS_PATH:-${glDriverPaths}$__strom_host_dri}"
                 export __EGL_VENDOR_LIBRARY_FILENAMES="''${__EGL_VENDOR_LIBRARY_FILENAMES:-${mesa64}/share/glvnd/egl_vendor.d/50_mesa.json$__strom_host_egl}"
                 unset __strom_host_vk __strom_host_gbm __strom_host_dri __strom_host_egl __strom_dir f
+
+                ${lib.optionalString (!cfg.enableGamescope) ''
+                  # The wrapper ro-bound the host cookie candidate to
+                  # /tmp/.strom-xauthority (bind-try skipped it when the
+                  # candidate was missing). Point XAUTHORITY at it only when
+                  # it actually landed -- never at a nonexistent file.
+                  if [ -f /tmp/.strom-xauthority ]; then
+                    export XAUTHORITY=/tmp/.strom-xauthority
+                  fi
+                ''}
 
                 ${lib.optionalString cfg.n2n.enable ''
                   # n2n edge inside the sandbox (own netns + slirp4netns
