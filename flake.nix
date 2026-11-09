@@ -213,6 +213,29 @@
 
       packages = forAllSystems (system: self.legacyPackages.${system}.games);
 
+      # Overlay for downstream modules: every game wrapper and utility
+      # under one `strom` namespace, so consumers write
+      # `pkgs.strom.<slug>` / `pkgs.strom.<utility>` and the passthru
+      # (`.no-gamescope`, `.apply`, `.override`) of each wrapper
+      # survives. Only the utilities already named `strom-*` are also
+      # added flat to top-level pkgs, where that prefix cannot collide
+      # with nixpkgs; game slugs (factorio, doom, ...) stay inside the
+      # namespace so real nixpkgs packages are never shadowed. Members
+      # re-expose existing derivations from legacyPackages -- nothing
+      # rebuilds against `final`. The system is read from `prev`:
+      # `filterAttrs` forces the body eagerly, and `final.system` there
+      # would loop through the fixpoint.
+      overlays.default =
+        final: prev:
+        let
+          lp = self.legacyPackages.${prev.stdenv.hostPlatform.system};
+          exposed = lp.games // lp.scripts;
+        in
+        {
+          strom = exposed;
+        }
+        // nixpkgs.lib.filterAttrs (name: _: nixpkgs.lib.hasPrefix "strom-" name) exposed;
+
       # Android outputs. Thin aliases onto each game's `android`
       # submodule (see lib/android/default.nix) so the useful paths are
       # `nix build .#androidManifests.<slug>` rather than
