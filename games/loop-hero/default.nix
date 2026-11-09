@@ -129,6 +129,25 @@ self.lib.mkGame { inherit lib pkgs; } {
       xorg.libXi
       xorg.libXinerama
       xorg.libxcb
+      # The bundled assets/linuxlibs/librtmp.so.0 DT_NEEDEDs the gnutls
+      # family (libgnutls.so.30, libhogweed.so.6, libnettle.so.8,
+      # libgmp.so.10), which autoPatchelfIgnoreMissingDeps skips on the
+      # assumption the FHS env provides them at runtime -- but the env
+      # shipped none of them. buildEnv links only the packages named
+      # here, never their runtime deps, so gnutls's whole DT_NEEDED
+      # closure is listed explicitly (same fix as lib/proton.nix for the
+      # proton runtime, commit 7bcd260): nettle (libnettle + libhogweed),
+      # gmp, libtasn1, libunistring, libidn2, p11-kit, and libffi for
+      # p11-kit. Soname set measured on gnutls 3.8.13 from the locked
+      # nixpkgs.
+      gnutls
+      nettle
+      gmp
+      libtasn1
+      libunistring
+      libidn2
+      p11-kit
+      libffi
     ];
 
   env = {
