@@ -9,6 +9,13 @@
 }:
 
 let
+  # EOL compat carriers for the bundled libcurl's version-gated legacy
+  # sonames (OPENSSL_1_1_x, OPENLDAP_2.4_2 symbol versions): the only
+  # real providers, since nixpkgs dropped both series. See the
+  # targetPkgs comment for the chain.
+  openssl_1_1 = pkgs.callPackage ../../pkgs/openssl_1_1 { };
+  openldap_2_4 = pkgs.callPackage ../../pkgs/openldap_2_4 { };
+
   # GOG Linux release of Loop Hero (1.1054 / build 55873). The mojosetup
   # .sh installer is a shell-script header followed by a zip archive, so
   # unzip handles it directly. Layout: data/noarch/game/Loop_Hero (ELF),
@@ -158,18 +165,19 @@ self.lib.mkGame { inherit lib pkgs; } {
       # still carries: zlib (also a direct DT_NEEDED of the Loop_Hero
       # binary), nghttp2, psl, rtmp (.so.1 — the bundle's librtmp.so.0
       # is stale, nothing needs it), krb5's gssapi, and sndio for the
-      # bundled libopenal. The link nixpkgs cannot close is OpenLDAP
-      # 2.4's libldap_r-2.4.so.2 / liblber-2.4.so.2: openldap >= 2.5
-      # dropped libldap_r and renamed the pair to libldap.so.2 /
-      # liblber.so.2, so the bundled libcurl — and with it the Loop_Hero
-      # binary — still fails to load until that soname pair is provided
-      # by other means.
+      # bundled libopenal. The version-gated legacy tail — openssl 1.1
+      # (libssl.so.1.1 / libcrypto.so.1.1, also direct DT_NEEDEDs of
+      # the binary) and openldap 2.4's libldap_r-2.4.so.2 /
+      # liblber-2.4.so.2 — comes from the compat carriers above; the
+      # bundled-linuxlibs prefix keeps nothing shadowed.
       zlib
       nghttp2
       libpsl
       rtmpdump
       libkrb5
       sndio
+      openssl_1_1
+      openldap_2_4
     ];
 
   env = {
