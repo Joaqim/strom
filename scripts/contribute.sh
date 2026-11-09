@@ -19,6 +19,8 @@ PATCH_BRANCHES=(
     "8bf6056 docs-upstream-findings"
     "120e63d fix/mk-game-vulkan-icd"
     "e203536 no-gamescope-launch"
+    "a068478 overlay-expose"
+    "735c360 system-deprecation"
 )
 
 die() {
