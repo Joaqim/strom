@@ -206,6 +206,17 @@ let
             };
         in
         lib.mapAttrsToList entry userOptions;
+
+      # pcsx2, dolphin, and azahar force QT_QPA_PLATFORM=xcb (see their
+      # runtime branches in config), so the game attaches to gamescope's
+      # nested Xwayland and has no display to run on without it.
+      # Retroarch is exempt -- direct to the host compositor it only
+      # loses gamescope's fit-scaled upscaling. Reached only from the
+      # no-gamescope entrypoint arms, so the gamescope wrapper of these
+      # runtimes still evaluates cleanly.
+      noGamescopeUnsupported =
+        runtime: name:
+        throw "strom: ${name}: runtime \"${runtime}\" requires gamescope (its Qt UI forces QT_QPA_PLATFORM=xcb and runs on the nested Xwayland; without gamescope there is no X server to attach to); enableGamescope = false (the .no-gamescope passthru) is not supported for this game";
     in
     {
       _class = "wrapper";
@@ -919,7 +930,7 @@ let
             if cfg.enableGamescope then
               lib.getExe cfg.gamescope.outputs.wrapper
             else
-              lib.getExe cfg.pcsx2.outputs.wrapper;
+              noGamescopeUnsupported cfg.runtime cfg.name;
         })
 
         (lib.mkIf (cfg.runtime == "dolphin") {
@@ -935,7 +946,7 @@ let
             if cfg.enableGamescope then
               lib.getExe cfg.gamescope.outputs.wrapper
             else
-              lib.getExe cfg.dolphin.outputs.wrapper;
+              noGamescopeUnsupported cfg.runtime cfg.name;
         })
 
         (lib.mkIf (cfg.runtime == "azahar") {
@@ -948,7 +959,7 @@ let
             if cfg.enableGamescope then
               lib.getExe cfg.gamescope.outputs.wrapper
             else
-              lib.getExe cfg.azahar.outputs.wrapper;
+              noGamescopeUnsupported cfg.runtime cfg.name;
         })
 
         (lib.mkIf cfg.n2n.enable {
