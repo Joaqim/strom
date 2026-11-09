@@ -151,9 +151,15 @@ self.lib.mkGame { inherit lib pkgs; } {
     ];
 
   env = {
-    # run.sh prepends ./assets/linuxlibs/ so the bundled libssl 1.1 +
-    # libcurl + libopenal win over anything the FHS layer exposes.
-    LD_LIBRARY_PATH = "assets/linuxlibs";
+    # The bundled libssl 1.1 + libcurl + libopenal must win over anything
+    # the FHS layer exposes, so the game dir's linuxlibs (relative to the
+    # wrapper's overlay cwd) comes first. A recipe-set LD_LIBRARY_PATH
+    # fully replaces the strom-fhs default (/usr/lib:/usr/lib64), and the
+    # loader's built-in search reaches the env's /lib64 but not /usr/lib
+    # or /lib, so the FHS dirs must be restated here or nothing the env
+    # ships there — libGL, libX11, the gnutls closure in targetPkgs —
+    # resolves at runtime.
+    LD_LIBRARY_PATH = "assets/linuxlibs:/usr/lib:/usr/lib64";
   };
 
   # The GameMaker Linux Runner ("YoYo Games Linux Runner V1.3")
