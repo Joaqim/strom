@@ -68,7 +68,7 @@ let
   # Vanilla retail/WON Half-Life game data (the half-life base recipe's
   # extracted Half-Life.zip), used as the source of the engine-matched
   # game/client DLLs — see modData below.
-  baseGameData = self.modules.${pkgs.system}.half-life._gameData;
+  baseGameData = self.modules.${pkgs.stdenv.hostPlatform.system}.half-life._gameData;
 
   modData =
     runCommandLocal "half-life-uplink-mod-data"
@@ -132,7 +132,7 @@ let
   # `-game hlulsl`). The half-life recipe's executableArgs builder
   # already prepends `-game <mod>` when `mod != "valve"`, so we
   # don't need to mkForce it.
-  uplink = self.modules.${pkgs.system}.half-life.apply (
+  uplink = self.modules.${pkgs.stdenv.hostPlatform.system}.half-life.apply (
     { lib, ... }:
     {
       config = {

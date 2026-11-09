@@ -21,7 +21,7 @@
 
 let
   cfg = config.programs.strom-desktop;
-  scripts = self.legacyPackages.${pkgs.system}.scripts;
+  scripts = self.legacyPackages.${pkgs.stdenv.hostPlatform.system}.scripts;
 in
 {
   options.programs.strom-desktop = {
