@@ -313,7 +313,10 @@ contents:
 
 The module enables kubo with sane defaults, opens the swarm ports, and
 creates a systemd timer (`strom-ipfs-pin`) that resolves the IPNS name and
-recursively pins everything underneath it.
+recursively pins everything underneath it. The full distribution
+architecture -- the publisher role, the consumer tiers, and the private
+LAN/VPN variant -- is documented in
+[docs/distribution.md](docs/distribution.md).
 
 The kubo HTTP gateway is bound to loopback on `gatewayPort`. The current
 default is still 8080, kubo's collision-prone port, kept only so a flake
