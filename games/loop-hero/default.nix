@@ -13,7 +13,8 @@ let
   # .sh installer is a shell-script header followed by a zip archive, so
   # unzip handles it directly. Layout: data/noarch/game/Loop_Hero (ELF),
   # run.sh, libsteam_api.so, assets/, plus assets/linuxlibs/ (bundled
-  # libcurl/libopenal/libssl 1.1/librtmp).
+  # libcurl/libopenal/librtmp.so.0; no libssl/libcrypto anywhere in the
+  # payload despite DT_NEEDEDs for the 1.1 sonames).
   installer = fetchIpfs {
     cid = "QmQSAMV6PnygfoLfYrNwXtCm5RzGdqu8p56qxPz3DahtPn";
     fallbackUrl = "https://archive.org/download/loop-hero-linux-gog-phoenix-games-lab/Game%2Floop_hero_1_1054_55873.sh";
@@ -53,10 +54,15 @@ let
     # The bundled libcurl/libopenal/libssl 1.1/librtmp need autoPatchelf
     # to find their dependencies, but skip the binary so autoPatchelf
     # doesn't strip its bundled-lib RPATH; we set it manually below.
-    # Bundled libcurl/librtmp pull in a long list of legacy SSL/krb5/ldap/
-    # nettle/idn libs that nixpkgs no longer carries. The game runs inside
-    # the FHS env at runtime, so resolve everything at runtime via
-    # LD_LIBRARY_PATH and just suppress autoPatchelf's complaints.
+    # The bundled curl chain's sonames split in two: current-generation
+    # ones nixpkgs still carries (zlib, nghttp2, psl, rtmp, gssapi/krb5,
+    # the gnutls family) — resolved at runtime from the FHS env's
+    # targetPkgs, which autoPatchelf cannot see because they are not
+    # buildInputs here — and genuinely-legacy ones nothing carries:
+    # openssl 1.1 (the bundle ships its own in assets/linuxlibs) and
+    # OpenLDAP 2.4's libldap_r-2.4.so.2/liblber-2.4.so.2 (openldap >= 2.5
+    # dropped libldap_r and moved to libldap.so.2/liblber.so.2). Suppress
+    # autoPatchelf's complaints for all of them.
     autoPatchelfIgnoreMissingDeps = [
       "libssl.so.1.1"
       "libcrypto.so.1.1"
@@ -148,11 +154,27 @@ self.lib.mkGame { inherit lib pkgs; } {
       libidn2
       p11-kit
       libffi
+      # The rest of the bundled libcurl's DT_NEEDED chain that nixpkgs
+      # still carries: zlib (also a direct DT_NEEDED of the Loop_Hero
+      # binary), nghttp2, psl, rtmp (.so.1 — the bundle's librtmp.so.0
+      # is stale, nothing needs it), krb5's gssapi, and sndio for the
+      # bundled libopenal. The link nixpkgs cannot close is OpenLDAP
+      # 2.4's libldap_r-2.4.so.2 / liblber-2.4.so.2: openldap >= 2.5
+      # dropped libldap_r and renamed the pair to libldap.so.2 /
+      # liblber.so.2, so the bundled libcurl — and with it the Loop_Hero
+      # binary — still fails to load until that soname pair is provided
+      # by other means.
+      zlib
+      nghttp2
+      libpsl
+      rtmpdump
+      libkrb5
+      sndio
     ];
 
   env = {
-    # The bundled libssl 1.1 + libcurl + libopenal must win over anything
-    # the FHS layer exposes, so the game dir's linuxlibs (relative to the
+    # The bundled libcurl + libopenal must win over anything the FHS
+    # layer exposes, so the game dir's linuxlibs (relative to the
     # wrapper's overlay cwd) comes first. A recipe-set LD_LIBRARY_PATH
     # fully replaces the strom-fhs default (/usr/lib:/usr/lib64), and the
     # loader's built-in search reaches the env's /lib64 but not /usr/lib
