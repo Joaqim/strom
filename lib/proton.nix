@@ -104,6 +104,26 @@ in
         p.pcre2
         p.libffi
         p.wayland
+        # Wine dlopens libgnutls.so.30 by bare soname from its unixlibs
+        # (bcrypt, secur32, crypt32 in files/lib/wine/*-unix/). GE-Proton
+        # bundles no gnutls of its own -- it expects the host distro to
+        # provide it, which the nixpkgs steam FHS does but this lean
+        # sandbox does not, so every wine process logs
+        # `err:winediag:gnutls_process_attach failed to load libgnutls`
+        # and bcrypt runs without asymmetric crypto (key_asymmetric_create
+        # fails; crypt32 loses PFX import/export). buildEnv links only
+        # the packages named here, never their runtime deps, so gnutls's
+        # whole DT_NEEDED closure is listed explicitly: nettle (libnettle
+        # + libhogweed), gmp, libtasn1, libunistring, libidn2, p11-kit
+        # (libffi ships above). Soname set measured on gnutls 3.8.13
+        # from the locked nixpkgs.
+        p.gnutls
+        p.nettle
+        p.gmp
+        p.libtasn1
+        p.libunistring
+        p.libidn2
+        p.p11-kit
         p.pkgsi686Linux.freetype
         p.pkgsi686Linux.glibc
         p.pkgsi686Linux.glib
@@ -111,6 +131,17 @@ in
         p.pkgsi686Linux.pcre2
         p.pkgsi686Linux.libffi
         p.pkgsi686Linux.wayland
+        # 32-bit gnutls closure: the i386-unix bcrypt/secur32/crypt32
+        # dlopen libgnutls.so.30 exactly like their 64-bit counterparts,
+        # and every WOW64 prefix spawns 32-bit wine processes during
+        # prefix setup.
+        p.pkgsi686Linux.gnutls
+        p.pkgsi686Linux.nettle
+        p.pkgsi686Linux.gmp
+        p.pkgsi686Linux.libtasn1
+        p.pkgsi686Linux.libunistring
+        p.pkgsi686Linux.libidn2
+        p.pkgsi686Linux.p11-kit
         p.pkgsi686Linux.libx11
         p.pkgsi686Linux.libxext
         p.pkgsi686Linux.libxcb
