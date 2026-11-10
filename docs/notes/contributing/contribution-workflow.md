@@ -32,8 +32,9 @@ The message is the record of how far verification reached — boot-to-menu, play
 Push develop to the fork and require CI green on the exact tree before upstreaming.
 A tree-identical commit set validated once is validated; do not rebuild confidence for identical content.
 
-Upstream through a patch built on a clean base: recreate the arc's commits unsigned off the current rad master in a worktree, confirm the trees converge with the develop versions, then open the patch via the magic ref as a draft, verify the computed range (ahead N, behind 0, expected base), set title and description with `edit`, and only then mark ready.
-Push the stage branch (`stage/<game>`) at the same tip so the maintainers receive the staging signal alongside the fix.
+Upstream through a patch built on a clean base: recreate the arc's commits unsigned off the current rad master in a worktree — an empty stage marker needs `cherry-pick --allow-empty --no-gpg-sign` — confirm the trees converge with the develop versions, and eval the package inside the worktree against the plain base; a failure pointing at a lib feature that exists only on develop means the patch stacks on the providing patch's head instead of master.
+Open the patch as a draft with `git push -o patch.draft rad HEAD:refs/patches` — without the option it opens directly in open state, titled from the range's first commit — then verify the computed range (ahead N, behind 0, expected base), set title and description with `edit` (first `-m` is the title, the rest the description), and only then mark ready.
+Push the stage branch (`stage/<game>`) at the same tip so the maintainers receive the staging signal alongside the fix; force-push with a leading `+` when rad holds a superseded tip, and move a stage branch checked out in a worktree with `git -C <worktree> reset --hard <tip>` because `git branch -f` refuses it.
 
 Treat sync output as noise in both directions.
 Propagation truth is the node log: a line reading that a peer fetched the repo from us.
