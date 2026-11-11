@@ -21,6 +21,7 @@ PATCH_BRANCHES=(
     "e203536 no-gamescope-launch"
     "a068478 overlay-expose"
     "735c360 system-deprecation"
+    "7b9de19 sidecar-runtime-dir-discovery"
 )
 
 die() {
