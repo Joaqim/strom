@@ -111,6 +111,11 @@
         default = self.nixosModules.ipfs-mirror;
       };
 
+      homeManagerModules = {
+        strom = import ./home-manager/strom.nix;
+        default = self.homeManagerModules.strom;
+      };
+
       lib = {
         mkGame =
           { lib, pkgs }:
