@@ -11,6 +11,10 @@ __pycache__/
 .env*
 !.envrc
 
+# CI log captures for the local agent workflow; develop-only like
+# scripts/contribute.sh, never carried into rad patches or stage branches.
+logs/
+
 # Steam metadata API response cache for scripts/fetch-steam-metadata.py.
 web/.steam-cache/
 
