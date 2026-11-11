@@ -103,8 +103,7 @@ in
     # environment is built from `nix.envVars`; the NixOS nix-daemon
     # module also flows these into session variables, so login
     # shells see them too. mkDefault so an operator's own list wins.
-    nix.envVars.STROM_IPFS_GATEWAYS =
-      lib.mkDefault "http://127.0.0.1:${toString cfg.gatewayPort}";
+    nix.envVars.STROM_IPFS_GATEWAYS = lib.mkDefault "http://127.0.0.1:${toString cfg.gatewayPort}";
 
     systemd.services.strom-ipfs-pin = {
       description = "Pin /ipns/${cfg.ipnsName} (strom mirror)";
