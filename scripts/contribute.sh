@@ -24,6 +24,7 @@ PATCH_BRANCHES=(
     "7b9de19 sidecar-runtime-dir-discovery"
     "501bb2d mirror-gateway-env"
     "1c4791e hm-per-user-module"
+    "4623866 docs-workflow-amendments"
 )
 
 # `rad patch update` without --base re-derives the base from the default
