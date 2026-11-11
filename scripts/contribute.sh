@@ -26,6 +26,14 @@ PATCH_BRANCHES=(
     "1c4791e hm-per-user-module"
 )
 
+# `rad patch update` without --base re-derives the base from the default
+# branch, silently unstacking a stacked patch. Patches listed here get their
+# base re-applied on every sync. Format: "<patch-id> <base-revspec>".
+STACKED_BASES=(
+    "501bb2d f5e13f7"
+    "1c4791e 3f2c2fa"
+)
+
 die() {
     echo "error: $*" >&2
     exit 1
@@ -43,6 +51,8 @@ sync       Cherry-pick the commits of <base>..<tip> that the patch branch
            does not already carry (patch-id comparison) onto that branch
            inside its worktree, then force-push to rad, update the patch,
            and sync. --dry-run stops after showing the cherry-pick plan.
+           Stacked patches listed in STACKED_BASES get their base
+           re-applied to `rad patch update` (without --base rad unstacks).
 EOF
 }
 
@@ -109,6 +119,13 @@ cmd_sync() {
     done
     [ -n "$branch" ] || die "patch ${patch_id} is not in the PATCH_BRANCHES table"
 
+    local base=''
+    for entry in "${STACKED_BASES[@]}"; do
+        if [ "${entry%% *}" = "$patch_id" ]; then
+            base=${entry#* }
+        fi
+    done
+
     local worktree
     worktree=$(git worktree list --porcelain | awk -v b="refs/heads/${branch}" '
         /^worktree / { wt = substr($0, 10) }
@@ -137,6 +154,9 @@ cmd_sync() {
 
     echo "patch   ${patch_id} (${branch})"
     echo "target  ${worktree}"
+    if [ -n "$base" ]; then
+        echo "base    ${base} (stacked, re-applied on update)"
+    fi
     if [ "${#missing[@]}" -eq 0 ]; then
         echo "nothing to sync: ${branch} already carries every commit in ${range} (patch-id match)"
         exit 0
@@ -171,8 +191,14 @@ cmd_sync() {
     git -c push.useForceIfIncludes=false push --force rad "$branch"
 
     # rad 1.9.1 `patch update` derives the new head from the working copy, so
-    # it must run where the patch branch is checked out.
-    (cd "$worktree" && rad patch update "$patch_id" -m "sync from develop: ${range}")
+    # it must run where the patch branch is checked out. --base is mandatory
+    # for stacked patches: without it rad re-derives the base from the
+    # default branch and unstacks the patch.
+    local update_args=("$patch_id" -m "sync from develop: ${range}")
+    if [ -n "$base" ]; then
+        update_args+=(--base "$base")
+    fi
+    (cd "$worktree" && rad patch update "${update_args[@]}")
 
     local sync_status=ok
     if ! rad sync; then
