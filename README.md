@@ -190,9 +190,10 @@ programs.strom = {
   enable = true;
   gamescope.outputWidth = 3440;
   gamescope.outputHeight = 1440;
-  # stateHome defaults to ~/.local/state/strom; leave the NixOS
-  # desktop module's stateDir null — exactly one side may own
-  # STROM_STATE_HOME.
+  # stateHome defaults to xdg.stateHome + "/strom" (typically
+  # ~/.local/state/strom); leave the NixOS desktop module's stateDir
+  # null — exactly one side may own STROM_STATE_HOME. If both sides
+  # are set anyway, which value wins depends on the launch path.
 };
 ```
 

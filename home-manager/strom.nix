@@ -51,7 +51,7 @@ in
       fullscreen = lib.mkOption {
         type = lib.types.nullOr lib.types.bool;
         default = null;
-        description = "True appends --fullscreen for every game (the wrapper matches the literal value 1). Null emits nothing.";
+        description = "True appends --fullscreen for every game (the wrapper matches the literal value 1). Null emits nothing. False, like null, emits nothing; a recipe's own -f is unaffected.";
       };
     };
 
