@@ -51,11 +51,10 @@ in
         order decides who breaks. 8330 is also outside the common
         dev-server ranges (3000, 5000, 8000, 8080, 8888).
 
-        Consumers point at the gateway via `STROM_IPFS_GATEWAYS` (the
-        injectable extra-gateway list of `fetchIpfs` in `lib/fetch-ipfs.nix`),
-        e.g. `STROM_IPFS_GATEWAYS=http://127.0.0.1:8330`. Operators on
-        8080 migrate with
-        `services.strom-ipfs-mirror.gatewayPort = 8330;`.
+        When the service is enabled the module exports the gateway
+        address as `STROM_IPFS_GATEWAYS` (mkDefault), so `fetchIpfs`
+        prefers it over public gateways; set the variable yourself to
+        override or extend the list.
       '';
     };
   };
@@ -92,6 +91,13 @@ in
 
     networking.firewall.allowedTCPPorts = [ 4001 ];
     networking.firewall.allowedUDPPorts = [ 4001 ]; # QUIC
+
+    # The gateway this module just bound is the fastest source for
+    # strom content on this machine: export it for fetchIpfs, which
+    # prefixes injected gateways ahead of the public defaults
+    # (lib/fetch-ipfs.nix). mkDefault so an operator's own list wins.
+    environment.sessionVariables.STROM_IPFS_GATEWAYS =
+      lib.mkDefault "http://127.0.0.1:${toString cfg.gatewayPort}";
 
     systemd.services.strom-ipfs-pin = {
       description = "Pin /ipns/${cfg.ipnsName} (strom mirror)";
