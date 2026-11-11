@@ -8,7 +8,8 @@
 #       stdout. Exits non-zero if no nested gamescope socket is
 #       recorded for the slug.
 #
-# The strom gamescope wrapper writes the active socket name to
+# The strom gamescope wrapper writes the active socket's full path
+# (inside the game's private strom-gs-* runtime dir) to
 # `$STROM_GAMEDIR/.strom-wayland-display` whenever it starts (see
 # lib/screenshot-sidecar.sh). This command reads that file and invokes
 # `gamescopectl screenshot <path>` against the socket.
@@ -43,15 +44,41 @@ writeShellApplication {
       exit 1
     fi
 
-    runtime_dir="''${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"
-    if [ ! -S "$runtime_dir/$socket" ]; then
-      echo "strom-screenshot: socket $runtime_dir/$socket missing (game exited?)" >&2
+    # The marker holds the full socket path inside the game's private
+    # strom-gs-* runtime dir, which is NOT the host XDG_RUNTIME_DIR.
+    # Older sidecars recorded the bare socket name: resolve those
+    # through the strom-gs-* glob before giving up.
+    socket_path=""
+    case "$socket" in
+      /*)
+        if [ -S "$socket" ]; then
+          socket_path=$socket
+        fi
+        ;;
+      *)
+        for candidate in "''${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"/strom-gs-*/"$socket"; do
+          if [ -S "$candidate" ]; then
+            socket_path=$candidate
+            break
+          fi
+        done
+        ;;
+    esac
+    if [ -z "$socket_path" ]; then
+      echo "strom-screenshot: socket $socket not found (game exited?)" >&2
       exit 1
     fi
 
     mkdir -p "$gamedir/screenshots"
     out="$gamedir/screenshots/manual-$(date -u +%Y%m%dT%H%M%SZ).png"
-    if WAYLAND_DISPLAY="$socket" gamescopectl screenshot "$out" >&2; then
+    # gamescopectl resolves the display as XDG_RUNTIME_DIR/<name>: an
+    # absolute WAYLAND_DISPLAY fails to connect (measured on gamescope
+    # 3.17). Split the resolved path back into the pair it wants.
+    # GAMESCOPE_WAYLAND_DISPLAY takes precedence when set, so pin it too.
+    socket_dir=''${socket_path%/*}
+    socket_name=''${socket_path##*/}
+    if XDG_RUNTIME_DIR="$socket_dir" WAYLAND_DISPLAY="$socket_name" \
+      GAMESCOPE_WAYLAND_DISPLAY="$socket_name" gamescopectl screenshot "$out" >&2; then
       # gamescope writes the file asynchronously after gamescopectl's
       # control message lands; poll briefly so the printed path points
       # at a fully-written PNG.

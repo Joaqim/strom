@@ -7,7 +7,7 @@
 #   1. Spawn a background watcher that waits for the gamescope-N.lock to
 #      appear in the wrapper's private XDG_RUNTIME_DIR (gamescope writes
 #      its display name into that lock path).
-#      Writes the socket name to $STROM_GAMEDIR/.strom-wayland-display
+#      Writes the full socket path to $STROM_GAMEDIR/.strom-wayland-display
 #      (consumed by the host-side `strom-screenshot` command).
 #   2. When STROM_AGENT_DEBUG=1, capture a PNG every
 #      STROM_AGENT_DEBUG_INTERVAL seconds (default 5) into
@@ -91,7 +91,7 @@ else
     done
 
     echo "[sidecar] detected socket=$new_socket after ${__strom_iter} polls" >> "$__strom_shot_log"
-    printf '%s\n' "$new_socket" > "$__strom_shot_marker"
+    printf '%s\n' "$XDG_RUNTIME_DIR/$new_socket" > "$__strom_shot_marker"
 
     if [ "${STROM_AGENT_DEBUG:-0}" != "1" ]; then
       # Marker-only mode: the host `strom-screenshot` command will take
