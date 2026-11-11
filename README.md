@@ -177,6 +177,25 @@ pkgs = import nixpkgs { overlays = [ strom.overlays.default ]; };
 A module option then reads:
 `default = pkgs.strom-launch or pinnedStrom.strom-launch;`
 
+## Per-user configuration via home-manager
+
+Import the module and set preferences per user; unset options keep
+recipe pins, and changes apply at next login (the values travel through
+`environment.d`, the same login boundary the NixOS modules use).
+
+```nix
+# in the home configuration, with strom's flake in inputs:
+imports = [ inputs.strom.homeManagerModules.strom ];
+programs.strom = {
+  enable = true;
+  gamescope.outputWidth = 3440;
+  gamescope.outputHeight = 1440;
+  # stateHome defaults to ~/.local/state/strom; leave the NixOS
+  # desktop module's stateDir null — exactly one side may own
+  # STROM_STATE_HOME.
+};
+```
+
 ## Cloning via Radicle
 
 This repo is also hosted on [Radicle](https://radicle.xyz/). To clone via

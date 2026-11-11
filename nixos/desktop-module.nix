@@ -73,6 +73,10 @@ in
         must be able to write below it, so either set `stateDirUser` to the
         desktop user or arrange ownership yourself. The directory is NOT
         created when this option is null.
+
+        For per-user state owned by home-manager instead, leave this null and
+        set `programs.strom.stateHome` via the flake's `homeManagerModules.strom`;
+        exactly one side may own STROM_STATE_HOME.
       '';
     };
 
