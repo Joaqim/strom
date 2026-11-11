@@ -54,7 +54,10 @@ in
         When the service is enabled the module exports the gateway
         address as `STROM_IPFS_GATEWAYS` (mkDefault), so `fetchIpfs`
         prefers it over public gateways; set the variable yourself to
-        override or extend the list.
+        override or extend the list. If you override
+        `services.kubo.settings.Addresses.Gateway`, the exported
+        address no longer matches your gateway, so you must also set
+        `STROM_IPFS_GATEWAYS` yourself.
       '';
     };
   };
@@ -95,8 +98,12 @@ in
     # The gateway this module just bound is the fastest source for
     # strom content on this machine: export it for fetchIpfs, which
     # prefixes injected gateways ahead of the public defaults
-    # (lib/fetch-ipfs.nix). mkDefault so an operator's own list wins.
-    environment.sessionVariables.STROM_IPFS_GATEWAYS =
+    # (lib/fetch-ipfs.nix). The export goes through `nix.envVars`
+    # because fixed-output fetchers run under the nix-daemon, whose
+    # environment is built from `nix.envVars`; the NixOS nix-daemon
+    # module also flows these into session variables, so login
+    # shells see them too. mkDefault so an operator's own list wins.
+    nix.envVars.STROM_IPFS_GATEWAYS =
       lib.mkDefault "http://127.0.0.1:${toString cfg.gatewayPort}";
 
     systemd.services.strom-ipfs-pin = {

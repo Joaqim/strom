@@ -25,4 +25,11 @@ got=$(nix eval --impure --json --expr "
     configuration = { imports = [ $repo/nixos/mirror-module.nix ]; };
   }).config.environment.sessionVariables ? STROM_IPFS_GATEWAYS" 2>&1)
 [ "$got" = "false" ] && echo "C PASS: disabled service sets nothing" || { echo "C FAIL: got '$got'"; exit 1; }
+
+got=$(nix eval --impure --json --expr "
+  let f = builtins.getFlake \"path:$repo\";
+  in (import (f.inputs.nixpkgs.outPath + \"/nixos\") {
+    configuration = { imports = [ $repo/nixos/mirror-module.nix ]; services.strom-ipfs-mirror.enable = true; };
+  }).config.nix.envVars ? STROM_IPFS_GATEWAYS" 2>&1)
+[ "$got" = "true" ] && echo "D PASS: enabled service exports via nix.envVars" || { echo "D FAIL: got '$got'"; exit 1; }
 echo "=== ALL ASSERTS PASS ==="
