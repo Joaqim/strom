@@ -22,6 +22,8 @@ PATCH_BRANCHES=(
     "a068478 overlay-expose"
     "735c360 system-deprecation"
     "7b9de19 sidecar-runtime-dir-discovery"
+    "501bb2d mirror-gateway-env"
+    "1c4791e hm-per-user-module"
 )
 
 die() {
