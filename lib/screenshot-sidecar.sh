@@ -4,9 +4,9 @@
 # manual screenshot command needs to discover the active socket.
 #
 # Behaviour:
-#   1. Spawn a background watcher that finds our gamescope process and
-#      inspects its open file descriptors for the gamescope-N.lock it
-#      flocks (gamescope writes its display name into that lock path).
+#   1. Spawn a background watcher that waits for the gamescope-N.lock to
+#      appear in the wrapper's private XDG_RUNTIME_DIR (gamescope writes
+#      its display name into that lock path).
 #      Writes the socket name to $STROM_GAMEDIR/.strom-wayland-display
 #      (consumed by the host-side `strom-screenshot` command).
 #   2. When STROM_AGENT_DEBUG=1, capture a PNG every
@@ -35,62 +35,50 @@ else
     __strom_shot_log="$__strom_shot_dir/.sidecar.log"
     : > "$__strom_shot_log"
     {
-      echo "[sidecar] start ppid=$parent_pid xdg=$XDG_RUNTIME_DIR"
+      echo "[sidecar] start ppid=$parent_pid xdg=$XDG_RUNTIME_DIR dir=${XDG_RUNTIME_DIR##*/}"
+      case "$XDG_RUNTIME_DIR" in
+        */strom-gs-*) ;;
+        *)
+          # Not the expected private dir: the bwrap /tmp fallback names it
+          # strom-gs.XXXXXX (dot, not dash) and an unwritable runtime dir
+          # leaves it ambient. Keep watching, but leave the anomaly
+          # visible for diagnosis.
+          echo "[sidecar] warning: XDG_RUNTIME_DIR is not a private strom-gs-* dir" >> "$__strom_shot_log"
+          ;;
+      esac
     } >> "$__strom_shot_log" 2>&1
 
-    # Find our gamescope child by walking the wrapper's descendants.
-    # Identify by the gamescope-N.lock file it holds open. The wrapper
-    # might `exec` into gamescope (same PID) OR keep gamescope as a
-    # child (when a trap was installed, which prevents exec). Cover both.
+    # The wrapper runs gamescope with a private, freshly-created
+    # XDG_RUNTIME_DIR (the strom-gs-* dir the bwrap preHook hosts, or the
+    # mktemp fallback in the gamescope wrapper), so any non-ei
+    # gamescope-[0-9]*.lock appearing in it is ours by construction: no
+    # /proc walk, no fd readlink, no risk of latching onto another
+    # session's gamescope. Fork-free per poll, so the 900 x 0.1s budget
+    # holds even under load.
     new_socket=""
-    gs_pid=""
     for __strom_iter in $(seq 1 900); do
       if ! kill -0 "$parent_pid" 2>/dev/null; then
         echo "[sidecar] parent gone during socket discovery" >> "$__strom_shot_log"
         exit 0
       fi
-
-      # Candidate PIDs: the wrapper itself (if it exec'd) plus any gamescope
-      # descendants. We deliberately limit to processes sharing the
-      # wrapper's session so we don't latch onto a concurrent strom game.
-      candidates="$parent_pid"
-      for child in $(pgrep -P "$parent_pid" 2>/dev/null); do
-        candidates="$candidates $child"
-      done
-
-      for pid in $candidates; do
-        [ -d "/proc/$pid" ] || continue
-        # Skip non-gamescope cmdlines (the wrapper bash before exec).
-        comm=$(cat "/proc/$pid/comm" 2>/dev/null) || comm=""
-        case "$comm" in
-          gamescope*) ;;
-          *) continue ;;
+      for lock in "$XDG_RUNTIME_DIR"/gamescope-[0-9]*.lock; do
+        [ -e "$lock" ] || continue
+        name=${lock##*/}
+        name=${name%.lock}
+        # Skip *-ei (libei companion lock, not the wayland display).
+        # Glob order puts gamescope-0-ei.lock before gamescope-0.lock,
+        # so this guard is load-bearing.
+        case "$name" in
+          *-ei) continue ;;
         esac
-        for fd in /proc/"$pid"/fd/*; do
-          target=$(readlink "$fd" 2>/dev/null) || continue
-          case "$target" in
-            "$XDG_RUNTIME_DIR"/gamescope-[0-9]*.lock)
-              # Strip leading dir and trailing .lock.
-              name=${target##*/}
-              name=${name%.lock}
-              # Skip *-ei.lock (libei companion, not the wayland display).
-              case "$name" in
-                *-ei) continue ;;
-              esac
-              new_socket="$name"
-              gs_pid="$pid"
-              break 2
-              ;;
-          esac
-        done
+        new_socket="$name"
+        break 2
       done
-
-      [ -n "$new_socket" ] && break
       sleep 0.1
     done
 
     if [ -z "$new_socket" ]; then
-      echo "[sidecar] no gamescope lock fd found within 90s" >> "$__strom_shot_log"
+      echo "[sidecar] no gamescope lock found within 90s" >> "$__strom_shot_log"
       echo "strom-screenshot: no gamescope socket found within 90s" >&2
       exit 0
     fi
@@ -102,7 +90,7 @@ else
       sleep 0.1
     done
 
-    echo "[sidecar] detected socket=$new_socket gs_pid=$gs_pid after ${__strom_iter} polls" >> "$__strom_shot_log"
+    echo "[sidecar] detected socket=$new_socket after ${__strom_iter} polls" >> "$__strom_shot_log"
     printf '%s\n' "$new_socket" > "$__strom_shot_marker"
 
     if [ "${STROM_AGENT_DEBUG:-0}" != "1" ]; then
