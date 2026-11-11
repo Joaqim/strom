@@ -39,6 +39,12 @@ Push the stage branch (`stage/<game>`) at the same tip so the maintainers receiv
 Treat sync output as noise in both directions.
 Propagation truth is the node log: a line reading that a peer fetched the repo from us.
 
+## Dispatching packaging agents
+
+Verify cited precedent worktrees still exist at dispatch time with `git worktree list` — stage worktrees are removed once their arcs land, and a brief pointing at a vanished precedent costs the agent a detour (stage-gloomwood, 2026-11-11).
+Briefs defer to the repository docs on verification method: AGENTS.md and docs/request-game-workflow.md mandate headless gamescope with the screenshot sidecar for agent verification, and physical-display instructions belong only to the operator rung.
+State the provenance-versus-instruction boundary in any brief that mentions the operator drop: the archive path records where this machine's bytes came from, never a step an upstream contributor reproduces.
+
 ## Tracker hygiene
 
 Radicle issues are the durable record; the next session orients from `rad issue list`, so the tracker state must equal reality.
@@ -56,6 +62,7 @@ Distinguish correlation from root cause explicitly in the issue body; both are u
 
 ## Related
 
+- docs/request-game-workflow.md — the game-packaging flow (rad issues, `stage/<slug>` branches, no patch for staging); the pipeline above governs fix and feature arcs.
 - Issue 670070d — screenshot sidecar discovery failure across runtimes, with the directory-watch fix direction.
 - Issue 02e31dd — mk-game env replacement semantics; the remediation choice is a maintainer decision.
 - Patch f89089f and branch stage/loop-hero — the arc this workflow was proven on.
