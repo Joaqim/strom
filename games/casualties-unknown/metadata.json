@@ -1,0 +1,17 @@
+{
+  "android": {
+    "backend": "gamenative",
+    "gamenative": {
+      "containerConfig": {
+        "executablePath": "CasualtiesUnknown.exe"
+      }
+    },
+    "schema": 1
+  },
+  "appid": 4576490,
+  "cids": [
+    "bafybeic7cjpvmvq5qsqhesqbtd2yqeum74nztbl5rh2wi3e4atexghv2aa"
+  ],
+  "description": "Casualties: Unknown (Orsoniks 2026, cave-exploration survival sim across 11 hostile layers, Unity 2022.3 Mono via Proton)",
+  "runtime": "proton"
+}

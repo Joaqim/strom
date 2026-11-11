@@ -1,0 +1,30 @@
+{
+  "developers": [
+    "Orsoniks"
+  ],
+  "genres": [
+    "Action",
+    "Adventure",
+    "Simulation"
+  ],
+  "hero": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/4576490/907888dce73f50c48410b5ab92971a0d95776b29/header.jpg?t=1794232782",
+  "long": "Survive a Harsh World\u00a0\nEach layer brings its own challenges, adapt and descend.\u00a0\n\nSimulated Limb and Cardiovascular Systems\u00a0\nInjuries are unavoidable. You will have to bandage yourself, fight infected wounds, and stabilize blood loss before losing consciousness. Additionally, your mood can greatly affect your chances of survival, too much doom and gloom will make your life harder.\u00a0\n\nCraft to Survive\u00a0\nAs a creature capable of reason, using tools will allow you to travel the cavernous layers more efficiently. In case you start bleeding out, the flora will provide great resources to patch yourself up.\u00a0\n\nExplore at Your Own Risk\u00a0\nPrevious expeditions have left some good loot behind. But even helpful things can prove to be your death.\n\nUncover the Truth\u00a0\nWhat actually lies at the end of this journey? And what becomes of you if you are to succeed?\n\nFeatures\nAn entirely simulated cardiovascular and limb damage system\n\nCharacter traits to increase on your run: Intelligence, Strength, and Resilience\n\nRobust crafting mechanics to increase your odds of survival\n\n3 characters with their own distinct playstyles\n\n11 layers of an alien planet with their own challenges and dangers\n\n300 items to find on your runs\n\nAdjustable loot and danger values accessible on the main menu",
+  "lutris": "https://lutris.net/games/casualties-unknown/",
+  "name": "Casualties: Unknown",
+  "screenshots": [
+    "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/4576490/cd1039ecd2d19a454d465987dcadde53ed8e081a/ss_cd1039ecd2d19a454d465987dcadde53ed8e081a.1920x1080.jpg?t=1794232782",
+    "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/4576490/6cffec4a8a9a855bd37c6a3f1ccb15bfc7e369ae/ss_6cffec4a8a9a855bd37c6a3f1ccb15bfc7e369ae.1920x1080.jpg?t=1794232782",
+    "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/4576490/ca5115b41cd3ed4714b2b4d1679c947f7c592dad/ss_ca5115b41cd3ed4714b2b4d1679c947f7c592dad.1920x1080.jpg?t=1794232782",
+    "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/4576490/fa72d6ef8406c7bc08967d9ec05f9af33d62ac88/ss_fa72d6ef8406c7bc08967d9ec05f9af33d62ac88.1920x1080.jpg?t=1794232782",
+    "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/4576490/d90f0341404099c7d7e4ea8d7aeb2924543353ff/ss_d90f0341404099c7d7e4ea8d7aeb2924543353ff.1920x1080.jpg?t=1794232782",
+    "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/4576490/46ab76eb4d274618a7fa0673644a13d8ef6c74ec/ss_46ab76eb4d274618a7fa0673644a13d8ef6c74ec.1920x1080.jpg?t=1794232782",
+    "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/4576490/8012369a2d2434805b1f0ccd5c71199311ef68ab/ss_8012369a2d2434805b1f0ccd5c71199311ef68ab.1920x1080.jpg?t=1794232782"
+  ],
+  "short": "Casualties: Unknown is an unforgiving cave-exploration survival simulator. Your captors have tasked you with retrieving lost cargo on a foreign planet, explore its 11 layers and do your best to survive diverse hostile environments. You are just one of the thousands of test subjects sent to die.",
+  "steam_appid": 4576490,
+  "tags": [
+    "Single-player",
+    "Family Sharing"
+  ],
+  "year": 2026
+}
