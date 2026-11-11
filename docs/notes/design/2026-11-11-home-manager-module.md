@@ -53,7 +53,7 @@ Exactly one owner at a time; the contract is documented rather than asserted, be
 
 ## Packaging
 
-Two independent patches, both based on plain upstream master, reviewable separately: the gateway variable (mirror module only) and the home-manager module (new file, desktop-module type change, README consumption docs).
+Two independent patches, both based on plain upstream master, reviewable separately: the gateway variable (mirror module only) and the home-manager module (new file, desktop-module ownership pointer in its `stateDir` description, README consumption docs).
 
 ## Verification ladder
 
