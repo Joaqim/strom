@@ -351,6 +351,12 @@ contents:
     # recommended: kubo HTTP gateway port. The current default is 8080
     # (deprecation-warned at rebuild); a future release flips it to 8330.
     # gatewayPort = 8330;
+    # serve the gateway to LAN/VPN peers as a private mirror: bind to the
+    # interface address they reach you on. Prefer this over 0.0.0.0 -- a
+    # wildcard bind on an internet-reachable interface is an open public
+    # gateway anyone can relay through. Non-loopback binds open
+    # gatewayPort in the firewall.
+    # gatewayListenAddress = "192.168.1.10";
   };
 }
 ```
@@ -374,6 +380,18 @@ registered service nor a kernel allocation can claim it); operators on
 Operators who assign their own full
 `services.kubo.settings.Addresses.Gateway` have taken control of the
 address and get no warning.
+
+By default the gateway binds to loopback. To serve it to LAN or VPN
+peers as a private mirror, set
+`services.strom-ipfs-mirror.gatewayListenAddress` to the interface
+address they reach you on (`"::"` binds IPv6, rendering
+`/ip6/::/tcp/<port>`). Prefer a specific address over `0.0.0.0` or `::`:
+a kubo gateway is a fetching proxy for arbitrary CIDs, so a wildcard
+bind on an internet-reachable interface turns the node into an open
+public gateway that third parties can relay through. A non-loopback
+bind opens `gatewayPort` in the firewall and points
+`STROM_IPFS_GATEWAYS` at the bind address; wildcard binds still export
+loopback, which they also answer.
 
 To prefer your mirror in `fetchIpfs` builds, point the injectable
 gateway list at it:

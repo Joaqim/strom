@@ -6,6 +6,33 @@
 }:
 let
   cfg = config.services.strom-ipfs-mirror;
+
+  # Kubo multiaddr for the gateway bind: an address containing a colon
+  # (any IPv6 literal, `::` included) binds under /ip6, everything else
+  # under /ip4.
+  gatewayMultiaddr =
+    addr: port:
+    if lib.hasInfix ":" addr then
+      "/ip6/${addr}/tcp/${toString port}"
+    else
+      "/ip4/${addr}/tcp/${toString port}";
+
+  # Host a client on this machine should dial: loopback and wildcard
+  # binds still answer on IPv4 loopback; a specific address is dialed at
+  # itself, bracketed when it is an IPv6 URL literal.
+  gatewayClientHost =
+    if
+      cfg.gatewayListenAddress == "127.0.0.1"
+      || cfg.gatewayListenAddress == "0.0.0.0"
+      || cfg.gatewayListenAddress == "::"
+    then
+      "127.0.0.1"
+    else if lib.hasInfix ":" cfg.gatewayListenAddress then
+      "[${cfg.gatewayListenAddress}]"
+    else
+      cfg.gatewayListenAddress;
+
+  isLoopback = addr: addr == "127.0.0.1" || addr == "::1";
 in
 {
   options.services.strom-ipfs-mirror = {
@@ -31,11 +58,12 @@ in
       type = lib.types.port;
       default = 8080;
       description = ''
-        TCP port for the kubo HTTP gateway. The module binds the gateway
-        to loopback only (a mirror node serves content via the swarm port
-        4001, not as a public gateway) and always renders the address
-        explicitly via `mkDefault`, so an operator-assigned
-        `services.kubo.settings.Addresses.Gateway` still wins.
+        TCP port for the kubo HTTP gateway. The module renders the bind
+        address from `gatewayListenAddress` (loopback by default; a
+        mirror node serves content via the swarm port 4001, not as a
+        public gateway) and always applies it via `mkDefault`, so an
+        operator-assigned `services.kubo.settings.Addresses.Gateway`
+        still wins.
 
         The current default is 8080, kubo's own port, kept only so that a
         flake bump does not silently move existing mirrors. It is
@@ -60,15 +88,39 @@ in
         `STROM_IPFS_GATEWAYS` yourself.
       '';
     };
+
+    gatewayListenAddress = lib.mkOption {
+      type = lib.types.str;
+      default = "127.0.0.1";
+      description = ''
+        Address the kubo HTTP gateway binds to, rendered as
+        `/ip4/<address>/tcp/<gatewayPort>`; an address containing a colon
+        (any IPv6 literal, `::` included) renders under `/ip6`. The
+        loopback default keeps the gateway private to this machine; set
+        the LAN or VPN interface address to serve the gateway to peers
+        there as a private mirror (the "private gateway over LAN or VPN"
+        tier of the distribution doc).
+
+        Prefer a specific interface address over `0.0.0.0` or `::`: a
+        kubo gateway is a fetching proxy for arbitrary CIDs, so a
+        wildcard bind on an internet-reachable interface turns the node
+        into an open public gateway third parties can relay through.
+
+        A non-loopback address opens `gatewayPort` in the firewall
+        (mkDefault on the merged list, so operator additions compose);
+        loopback leaves the firewall untouched.
+      '';
+    };
   };
 
   config = lib.mkIf cfg.enable {
     services.kubo = {
       enable = lib.mkDefault true;
       settings = {
-        # Loopback gateway on an explicit, deprecation-warned port
-        # (see services.strom-ipfs-mirror.gatewayPort).
-        Addresses.Gateway = lib.mkDefault "/ip4/127.0.0.1/tcp/${toString cfg.gatewayPort}";
+        # Gateway on the configured listen address and an explicit,
+        # deprecation-warned port (see
+        # services.strom-ipfs-mirror.gatewayPort / .gatewayListenAddress).
+        Addresses.Gateway = lib.mkDefault (gatewayMultiaddr cfg.gatewayListenAddress cfg.gatewayPort);
         Experimental.FilestoreEnabled = lib.mkDefault true;
         Datastore.StorageMax = lib.mkDefault "100GB";
         Swarm = {
@@ -92,8 +144,18 @@ in
       };
     };
 
-    networking.firewall.allowedTCPPorts = [ 4001 ];
     networking.firewall.allowedUDPPorts = [ 4001 ]; # QUIC
+
+    # A non-loopback gateway serves LAN/VPN peers, so the port must be
+    # reachable there. The entry is plain in the list merge (a mkDefault
+    # one would be dropped by filterOverrides next to any plain
+    # definition, including the swarm port above): operator additions
+    # concatenate, and an operator mkForce assignment replaces the whole
+    # list.
+    networking.firewall.allowedTCPPorts = lib.mkMerge [
+      [ 4001 ]
+      (lib.mkIf (!isLoopback cfg.gatewayListenAddress) [ cfg.gatewayPort ])
+    ];
 
     # The gateway this module just bound is the fastest source for
     # strom content on this machine: export it for fetchIpfs, which
@@ -103,7 +165,10 @@ in
     # environment is built from `nix.envVars`; the NixOS nix-daemon
     # module also flows these into session variables, so login
     # shells see them too. mkDefault so an operator's own list wins.
-    nix.envVars.STROM_IPFS_GATEWAYS = lib.mkDefault "http://127.0.0.1:${toString cfg.gatewayPort}";
+    # The host is address-aware: loopback and wildcard binds export
+    # 127.0.0.1 (which they answer), a specific bind exports that
+    # address, which this machine can also reach.
+    nix.envVars.STROM_IPFS_GATEWAYS = lib.mkDefault "http://${gatewayClientHost}:${toString cfg.gatewayPort}";
 
     systemd.services.strom-ipfs-pin = {
       description = "Pin /ipns/${cfg.ipnsName} (strom mirror)";
@@ -132,7 +197,9 @@ in
       lib.mkIf
         (
           cfg.gatewayPort == 8080
-          && config.services.kubo.settings.Addresses.Gateway == "/ip4/127.0.0.1/tcp/8080"
+          &&
+            config.services.kubo.settings.Addresses.Gateway
+            == (gatewayMultiaddr cfg.gatewayListenAddress cfg.gatewayPort)
         )
         [
           "strom-ipfs-mirror: the gateway port is 8080, kubo's collision-prone default (bind-race with common HTTP-alt services). 8330 is the recommended port — set services.strom-ipfs-mirror.gatewayPort = 8330; to migrate. A future release will change the default."
