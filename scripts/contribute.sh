@@ -23,6 +23,7 @@ PATCH_BRANCHES=(
     "735c360 system-deprecation"
     "7b9de19 sidecar-runtime-dir-discovery"
     "501bb2d mirror-gateway-env"
+    "87901f4 mirror-gateway-listen"
     "1c4791e hm-per-user-module"
     "4623866 docs-workflow-amendments"
 )
@@ -32,6 +33,7 @@ PATCH_BRANCHES=(
 # base re-applied on every sync. Format: "<patch-id> <base-revspec>".
 STACKED_BASES=(
     "501bb2d f5e13f7"
+    "87901f4 501bb2d"
     "1c4791e 3f2c2fa"
 )
 
