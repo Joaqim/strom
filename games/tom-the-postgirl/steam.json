@@ -1,0 +1,49 @@
+{
+  "developers": [
+    "Oopsie Daisies",
+    "ARTE France"
+  ],
+  "genres": [
+    "Adventure",
+    "Casual",
+    "Indie"
+  ],
+  "hero": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2257440/5a905398f76f365984dafd2238876c129423d12c/header.jpg?t=1793376393",
+  "long": "A journey into local madness\nCalling all fans of creepy-cute narrative games!\nThis absurd adventure follows the mischievous Tom on her delivery rounds, which always seem to go awry. No surprise there, since Tom spends most of her time peeking inside people\u2019s homes whenever she gets the chance.\nJoin Tom in a charming village where every resident has something to hide. You deliver their packages, but what do they do with them once out of sight? Every window, every door, every crack in the wall is an opportunity to learn more about the inhabitants and their nasty secrets: an orphanage that looks more like a kennel, two party-loving priests, a couple of chainsaw-wielding hippies\u2026 Human nature in all its dreadful diversity awaits you!\n\nPoint and Click? Walk and Stalk!\nDive into unique hand-drawn scenes and discover countless hiding spots where you can spy on the residents. Take a closer look and witness situations that may be disturbing, or even unholy. Will that stop you from peeking? Quite the opposite.\nFrame-by-frame animation gives this  world a retro feel and immerses you in a strange village where even the most mundane events turn suspicious.\n\nA guilty pleasure\nEmbrace the guilty pleasure of stepping into Tom\u2019s shoes as you adopt her voyeuristic behavior and break every established rule.\nYour adventure is marked by events as outrageous as they are zany, leading you deeper into the village\u2019s mysteries. From drug-dealing pigeons hiding in the cemetery to a wandering cowboy worm or a grumpy squirrel, it\u2019s not just the humans who deserve your attention. So watch your step\u2026 or don\u2019t.\nNow it\u2019s up to you to decide whether to focus on your work or disrupt public order. Will you resist the temptation to cut down perfectly trimmed hedges, trample flowers in gardens, or steal decorations?\n\nFeatures\nUnrestrained voyeurism: don\u2019t be afraid to peek, every seemingly mundane detail can reveal the villagers\u2019 madness.\n\nTransgressive gameplay: stalk the villagers, open their packages, or destroy their gardens. With Tom, almost anything goes.\n\nSomewhere between Adult Swim and a children\u2019s book: the apparent calm of the hand-drawn black-and-white visuals contrasts with the unsettling lack of restraint displayed by the villagers Tom spies on.\n\nThe joy of rediscovery: with each playthrough, uncover new details you may have missed and experiment with more or less cautious approaches to reveal all the villagers\u2019 secrets.",
+  "lutris": "https://lutris.net/games/tom-the-postgirl/",
+  "name": "Tom the Postgirl",
+  "screenshots": [
+    "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2257440/b90071e7ab2ce9ae2d3383d137684de6a3ad6f93/ss_b90071e7ab2ce9ae2d3383d137684de6a3ad6f93.1920x1080.jpg?t=1793376393",
+    "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2257440/aea377bf017e8c760fa1fda66b1c8e8b1206ebf6/ss_aea377bf017e8c760fa1fda66b1c8e8b1206ebf6.1920x1080.jpg?t=1793376393",
+    "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2257440/5d964486785fb4d136e73fd37047de1d7f28261f/ss_5d964486785fb4d136e73fd37047de1d7f28261f.1920x1080.jpg?t=1793376393",
+    "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2257440/d22fbf39c1fbff6b6cbe4a82164c26b7f168dc13/ss_d22fbf39c1fbff6b6cbe4a82164c26b7f168dc13.1920x1080.jpg?t=1793376393",
+    "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2257440/b983aba08b73bb87b6d2dae848598c9284d29cd9/ss_b983aba08b73bb87b6d2dae848598c9284d29cd9.1920x1080.jpg?t=1793376393",
+    "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2257440/8488d69e42c2b73b17037014ca4c48157418d099/ss_8488d69e42c2b73b17037014ca4c48157418d099.1920x1080.jpg?t=1793376393",
+    "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2257440/16a707dd2f386a9e44944f8f0d9773db1cc011ea/ss_16a707dd2f386a9e44944f8f0d9773db1cc011ea.1920x1080.jpg?t=1793376393",
+    "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2257440/111299d20b607f0bef496ace6f88193bb8247336/ss_111299d20b607f0bef496ace6f88193bb8247336.1920x1080.jpg?t=1793376393"
+  ],
+  "short": "Join Tom, the village\u2019s new postgirl, and get to know the locals, perhaps a little too well. Her method, although controversial, is highly effective: intense, obsessive stalking.",
+  "steam_appid": 2257440,
+  "tags": [
+    "Single-player",
+    "Steam Achievements",
+    "Full controller support",
+    "Captions available",
+    "Adjustable Text Size",
+    "Camera Comfort",
+    "Color Alternatives",
+    "#category_contrast_controls",
+    "Custom Volume Controls",
+    "Keyboard Only Option",
+    "Playable without Timed Input",
+    "DualShock Controller Support",
+    "DualShock Controller Support",
+    "DualSense Controller Support",
+    "DualSense Controller Support",
+    "Stereo Sound",
+    "Subtitle Options",
+    "Steam Cloud",
+    "Family Sharing"
+  ],
+  "year": 2026
+}

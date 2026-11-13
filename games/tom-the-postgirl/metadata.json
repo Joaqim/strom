@@ -1,0 +1,16 @@
+{
+  "android": {
+    "backend": "gamenative",
+    "gamenative": {
+      "containerConfig": {
+        "executablePath": "TomThePostgirl.exe"
+      }
+    },
+    "schema": 1
+  },
+  "cids": [
+    "bafybeiadjrutaf5o5hi42w64kjtiz7n7knzkc4cpincsktwdizamjhcbny"
+  ],
+  "description": "Tom the Postgirl (Oopsie Daisies / ARTE France 2026, small-town stalking adventure, Unity 6 Mono via Proton)",
+  "runtime": "proton"
+}
