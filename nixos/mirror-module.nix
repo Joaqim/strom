@@ -107,8 +107,9 @@ in
         into an open public gateway third parties can relay through.
 
         A non-loopback address opens `gatewayPort` in the firewall
-        (mkDefault on the merged list, so operator additions compose);
-        loopback leaves the firewall untouched.
+        as a plain entry in the list merge: operator additions
+        concatenate, and an `mkForce` assignment replaces the whole
+        list. Loopback leaves the firewall untouched.
       '';
     };
   };
