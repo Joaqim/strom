@@ -26,6 +26,8 @@ PATCH_BRANCHES=(
     "87901f4 mirror-gateway-listen"
     "1c4791e hm-per-user-module"
     "4623866 docs-workflow-amendments"
+    "b616def patch-tom-the-postgirl"
+    "1c3dc3a patch-casualties-unknown"
 )
 
 # `rad patch update` without --base re-derives the base from the default
