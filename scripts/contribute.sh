@@ -35,6 +35,8 @@ PATCH_BRANCHES=(
     "492ab9c patch-find-the-needle"
     "b616def patch-tom-the-postgirl"
     "1c3dc3a patch-casualties-unknown"
+    "5eec5c7 patch-pin-ipfs-app"
+    "8b027ef patch-gateway-port-default"
 )
 
 # `rad patch update` without --base re-derives the base from the default
@@ -44,6 +46,7 @@ STACKED_BASES=(
     "501bb2d f5e13f7"
     "87901f4 501bb2d"
     "1c4791e 3f2c2fa"
+    "8b027ef f5e13f7"
 )
 
 die() {
