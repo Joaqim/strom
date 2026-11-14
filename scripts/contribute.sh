@@ -38,6 +38,7 @@ PATCH_BRANCHES=(
     "5eec5c7 patch-pin-ipfs-app"
     "8b027ef patch-gateway-port-default"
     "e9ce3ee patch-bwrap-container-parent"
+    "a4f35d8 patch-zombies-arent-real"
 )
 
 # `rad patch update` without --base re-derives the base from the default
