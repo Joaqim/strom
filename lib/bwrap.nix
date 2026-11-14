@@ -359,6 +359,15 @@ in
         ''
           ${lib.concatStringsSep "\n" (mapAttrsToList (n: v: ''export ${n}="${toString v}"'') config.env)}
 
+          # A container parent (e.g. steam-fhsenv for a Steam shortcut)
+          # can hand us a TMPDIR absent from its own filesystem view;
+          # mktemp -t below honors it and dies before any game code
+          # runs, taking the whole launch down silently. An unusable
+          # TMPDIR falls back to /tmp.
+          if [ -n "''${TMPDIR:-}" ] && { [ ! -d "$TMPDIR" ] || [ ! -w "$TMPDIR" ]; }; then
+            unset TMPDIR
+          fi
+
           # Host-side control FIFO. Created BEFORE preHook so that hook
           # output can reference STROM_CONTROL_DIR if needed; bind-mounted
           # into the bwrap at /tmp/.strom-control by the --bind argv above.
