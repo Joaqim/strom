@@ -1,0 +1,43 @@
+{
+  "developers": [
+    "Jogamedev"
+  ],
+  "genres": [
+    "Strategy",
+    "Early Access"
+  ],
+  "hero": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/5185890/cd54755b9d15a2cad33471464fb630d6a5363ff0/header.jpg?t=1794682323",
+  "long": "Zombies Aren't Real\u00a0is a horde-defense, strategy game where you attempt to control a quick-spreading zombie infection in real-world cities by commanding military forces.\n\nYou're given a bird's eye view of a city and shown where the infection will begin, but you have time to plan.\u00a0 With limited resources, carefully choose how you will respond to the infection and establish a plan to save as many civilians as possible.\n\nOnce you're ready the chaos begins. The zombies will fan out and begin to infect the population.\u00a0 You are able to adapt your plan on the fly.\u00a0 If the zombies break through your perimeter you can call in air support such as bombers or gatling gun helicopters to attempt to stop the spread before it gets out of control.\n\nIf you're able to eliminate all the zombies you win and your score is determined by how many civilians you saved.\n\nFeatures\nPlay in real-world cities\n\nDeploy specialized ground forces against the spreading horde, such as snipers, turrets, mortar squads and garrisons\n\nCall in air strikes when things get out of hand, but be careful to aim them well to minimize civilian casualties\n\nPlace safe zones, gates, and more to protect the civilian population\n\nSteam Workshop support for custom maps\n\nPlay with one other friend in Online Co-op Multiplayer\n\n\"Zombies Aren't Real\" is highly strategic and winning will push you to think cleverly and experiment with different combinations of units, buildings and upgrades.\u00a0 It is not an incremental game.\u00a0 Losing is fun! We encourage you to retry often, restarting a scenario once defeat is inevitable to adjust your strategy. The fun is in figuring out how to best defend the city!\n\nMap data \u00a9 OpenStreetMap contributors, Overture Maps Foundation, TomTom, Microsoft (Open Database License,  Esri Community Maps contributors, Google Open Buildings, work derived from BTN 2024 ign.es (CC BY 4.0,  postal codes: GeoNames (CC BY 4.0).",
+  "lutris": "https://lutris.net/games/zombies-arent-real/",
+  "name": "Zombies Aren't Real",
+  "screenshots": [
+    "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/5185890/35437ea95021b631804a33c54bb04ed9d0d01cfb/ss_35437ea95021b631804a33c54bb04ed9d0d01cfb.1920x1080.jpg?t=1794682323",
+    "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/5185890/023e5c94d5d8279562b60d27f9b5dc198cbf75d1/ss_023e5c94d5d8279562b60d27f9b5dc198cbf75d1.1920x1080.jpg?t=1794682323",
+    "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/5185890/41eb4733fd848b81fdbcccc760d11e754613be86/ss_41eb4733fd848b81fdbcccc760d11e754613be86.1920x1080.jpg?t=1794682323",
+    "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/5185890/10678a780b89a3dd92d45580f51e1fe43582f5d4/ss_10678a780b89a3dd92d45580f51e1fe43582f5d4.1920x1080.jpg?t=1794682323",
+    "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/5185890/25d547a4905a2200712ba93a25a455a02dbc824b/ss_25d547a4905a2200712ba93a25a455a02dbc824b.1920x1080.jpg?t=1794682323",
+    "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/5185890/46aef02e3ee8725f109bfe0949f41d435726933f/ss_46aef02e3ee8725f109bfe0949f41d435726933f.1920x1080.jpg?t=1794682323"
+  ],
+  "short": "Zombies Aren't Real\u00a0is a horde-defense, strategy game where you deploy military forces in an attempt to quell a quick-spreading zombie infection and save as many civilians as you can!",
+  "steam_appid": 5185890,
+  "tags": [
+    "Single-player",
+    "Multi-player",
+    "Co-op",
+    "Online Co-op",
+    "Steam Achievements",
+    "Steam Workshop",
+    "Adjustable Text Size",
+    "Camera Comfort",
+    "Color Alternatives",
+    "Custom Volume Controls",
+    "Adjustable Difficulty",
+    "#category_playable_at_your_own_pace",
+    "Playable without Timed Input",
+    "Steam Cloud",
+    "Steam Leaderboards",
+    "Includes level editor",
+    "Family Sharing"
+  ],
+  "year": 2026
+}

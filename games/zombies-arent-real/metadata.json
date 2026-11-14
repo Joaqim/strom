@@ -1,0 +1,28 @@
+{
+  "android": {
+    "backend": "gamenative",
+    "gamenative": {
+      "containerConfig": {
+        "executablePath": "zombies-arent-real.exe"
+      }
+    },
+    "schema": 1
+  },
+  "appid": 5185890,
+  "cids": [
+    "bafybeihs6h3qeynff532osje5s2dwalpryy77srxcatgsg4xh7o6doseu4"
+  ],
+  "description": "Zombies Aren't Real (Jogamedev 2026 Early Access, horde-defense strategy against a spreading zombie infection, custom C++ D3D11 via Proton)",
+  "developers": [
+    "Jogamedev"
+  ],
+  "genres": [
+    "Strategy"
+  ],
+  "name": "Zombies Aren't Real",
+  "runtime": "proton",
+  "tags": [
+    "Single-player"
+  ],
+  "year": 2026
+}
