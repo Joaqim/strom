@@ -368,6 +368,18 @@ in
             unset TMPDIR
           fi
 
+          # Same container-parent class as the TMPDIR guard: Steam's
+          # pressure-vessel environment exports
+          # XAUTHORITY=/run/pressure-vessel/Xauthority, a path absent
+          # from this wrapper's filesystem view. Gamescope's internal
+          # Xwayland honors the inherited variable, fails to authorize
+          # its own xwm, and dies in a restart loop ("xwm: Can't open
+          # display"). An XAUTHORITY that does not point at a readable
+          # file is dropped so the per-build fallbacks apply.
+          if [ -n "''${XAUTHORITY:-}" ] && [ ! -r "$XAUTHORITY" ]; then
+            unset XAUTHORITY
+          fi
+
           # Host-side control FIFO. Created BEFORE preHook so that hook
           # output can reference STROM_CONTROL_DIR if needed; bind-mounted
           # into the bwrap at /tmp/.strom-control by the --bind argv above.
