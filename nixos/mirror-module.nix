@@ -29,7 +29,7 @@ in
 
     gatewayPort = lib.mkOption {
       type = lib.types.port;
-      default = 8080;
+      default = 8330;
       description = ''
         TCP port for the kubo HTTP gateway. The module binds the gateway
         to loopback only (a mirror node serves content via the swarm port
@@ -37,25 +37,22 @@ in
         explicitly via `mkDefault`, so an operator-assigned
         `services.kubo.settings.Addresses.Gateway` still wins.
 
-        The current default is 8080, kubo's own port, kept only so that a
-        flake bump does not silently move existing mirrors. It is
-        deprecation-bearing: while the effective gateway is the
-        module-rendered 8080 address, every rebuild raises an evaluation
-        warning, and a future release will change the default.
-
-        8330 is the recommended value: it falls inside the IANA-unassigned
-        block 8323-8350 (no registered service claims it) and below the
-        Linux ephemeral port range (32768-60999 by default), so neither a
+        The default is 8330: it falls inside the IANA-unassigned block
+        8323-8350 (no registered service claims it) and below the Linux
+        ephemeral port range (32768-60999 by default), so neither a
         registered service nor a kernel allocation can claim the port --
         8080 is the canonical collision-prone HTTP-alt port where bind
         order decides who breaks. 8330 is also outside the common
         dev-server ranges (3000, 5000, 8000, 8080, 8888).
 
+        Explicitly setting 8080 remains possible for operators that
+        depend on it, but while the effective gateway is the
+        module-rendered 8080 address, every rebuild raises an evaluation
+        warning.
+
         Consumers point at the gateway via `STROM_IPFS_GATEWAYS` (the
         injectable extra-gateway list of `fetchIpfs` in `lib/fetch-ipfs.nix`),
-        e.g. `STROM_IPFS_GATEWAYS=http://127.0.0.1:8330`. Operators on
-        8080 migrate with
-        `services.strom-ipfs-mirror.gatewayPort = 8330;`.
+        e.g. `STROM_IPFS_GATEWAYS=http://127.0.0.1:8330`.
       '';
     };
   };
@@ -123,7 +120,7 @@ in
           && config.services.kubo.settings.Addresses.Gateway == "/ip4/127.0.0.1/tcp/8080"
         )
         [
-          "strom-ipfs-mirror: the gateway port is 8080, kubo's collision-prone default (bind-race with common HTTP-alt services). 8330 is the recommended port — set services.strom-ipfs-mirror.gatewayPort = 8330; to migrate. A future release will change the default."
+          "strom-ipfs-mirror: the gateway port is 8080, kubo's collision-prone default (bind-race with common HTTP-alt services); the module default is 8330. Remove the explicit services.strom-ipfs-mirror.gatewayPort = 8080, or set it to 8330."
         ];
   };
 }

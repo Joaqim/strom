@@ -304,9 +304,9 @@ contents:
     enable = true;
     # optional: override the poll interval (default: hourly)
     # interval = "daily";
-    # recommended: kubo HTTP gateway port. The current default is 8080
-    # (deprecation-warned at rebuild); a future release flips it to 8330.
-    # gatewayPort = 8330;
+    # kubo HTTP gateway port (default: 8330). Operators that need kubo's
+    # 8080 set it explicitly and get an evaluation warning:
+    # gatewayPort = 8080;
   };
 }
 ```
@@ -315,16 +315,15 @@ The module enables kubo with sane defaults, opens the swarm ports, and
 creates a systemd timer (`strom-ipfs-pin`) that resolves the IPNS name and
 recursively pins everything underneath it.
 
-The kubo HTTP gateway is bound to loopback on `gatewayPort`. The current
-default is still 8080, kubo's collision-prone port, kept only so a flake
-bump does not silently move existing mirrors: while the effective gateway
-is the module-rendered 8080 address, every rebuild raises an evaluation
-warning with the migration line, and a future release will change the
-default. 8330 is the recommended value (inside the IANA-unassigned block
-8323-8350 and below the Linux ephemeral port range, so neither a
-registered service nor a kernel allocation can claim it); operators on
-8080 migrate with `services.strom-ipfs-mirror.gatewayPort = 8330;`.
-Operators who assign their own full
+The kubo HTTP gateway is bound to loopback on `gatewayPort`, which
+defaults to 8330 (inside the IANA-unassigned block 8323-8350 and below
+the Linux ephemeral port range, so neither a registered service nor a
+kernel allocation can claim it, and outside the common dev-server
+ranges 3000, 5000, 8000, 8080, 8888) rather than kubo's
+collision-prone 8080. Operators who need 8080 set
+`services.strom-ipfs-mirror.gatewayPort = 8080;` explicitly and get an
+evaluation warning at every rebuild while it is in effect. Operators
+who assign their own full
 `services.kubo.settings.Addresses.Gateway` have taken control of the
 address and get no warning.
 
