@@ -26,6 +26,13 @@ PATCH_BRANCHES=(
     "87901f4 mirror-gateway-listen"
     "1c4791e hm-per-user-module"
     "4623866 docs-workflow-amendments"
+    "a60c5cb docs-distribution"
+    "f48ef7f fix-proton-gnutls"
+    "f89089f patch-loop-hero"
+    "cfb8a30 patch-gloomwood"
+    "98ee1f9 patch-darkwood"
+    "224cacd patch-queens-domain"
+    "492ab9c patch-find-the-needle"
     "b616def patch-tom-the-postgirl"
     "1c3dc3a patch-casualties-unknown"
 )
