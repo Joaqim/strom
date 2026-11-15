@@ -49,6 +49,82 @@ let
     hash = "sha256-d+/sNulm0NGv0J7b2R0ymyFMTasU9dIKm92/fZX2CgI=";
     name = "infamous-second-son-ankergames-repack.zip";
   };
+  # The launcher's options file for the first-boot seed below. Only
+  # game_dir is load-bearing: every other field carries the value
+  # the launcher itself wrote after the operator completed its
+  # folder chooser (its defaults, empty patches and controls maps),
+  # so a fresh install parses a schema-complete file instead of
+  # betting on partial-JSON tolerance. game_patches is emptied: the
+  # operator's two picks are a player choice, not install config.
+  # The pick is the overlay mountpoint mk-game fixes at
+  # /tmp/.strom-overlay in both src and dataArchive modes, with the
+  # archive's root folder stripped, so the PS4 dump sits at game/
+  # on the tree top -- the same layout the root-relative
+  # `executable` already depends on. builtins.toJSON re-escapes the
+  # backslashes exactly as the launcher wrote them (doubled in the
+  # JSON text).
+  issnSettings = builtins.toJSON {
+    ui_language = "";
+    game_dir = "Z:\\tmp\\.strom-overlay\\game";
+    update_dir = "";
+    experimental_upscaler = false;
+    video_backend = "auto";
+    gamemode = false;
+    mangohud = false;
+    desktop_integration = true;
+    user_dir = "";
+    mods_dir = "";
+    mods_enabled = true;
+    patches_dir = "";
+    language = "1";
+    game_language = "";
+    pad_emulation = "";
+    spray_stick = "";
+    stick_deadzone = "";
+    skip_intro = false;
+    save_backups = true;
+    vram_limit = "";
+    frame_pacing = "";
+    frame_gen = false;
+    seed_any_profile = false;
+    player_name = "";
+    hdr = false;
+    draw_pipe = "";
+    readbacks = "";
+    no_msaa = "";
+    stream_memory = "cached";
+    gpu_id = "";
+    background_warmup = true;
+    parallel_warmup = true;
+    pipeline_binaries = false;
+    perf_diag = false;
+    frame_capture_key = false;
+    frame_stats = false;
+    gpu_profile = false;
+    vk_validation = false;
+    close_on_play = false;
+    check_updates = false;
+    game_patches = { };
+    controls = {
+      key = { };
+      pad = { };
+    };
+    pad_style = "xbox";
+    glyph_style = "off";
+    compute_priority = true;
+    ordered_readback = false;
+    draw_distance = "";
+    perf_mode = "";
+    render_height = "";
+    upscale_quality = "";
+    aniso = "";
+    shader_compile = "";
+    screen_shape = "";
+    anti_aliasing = "game";
+    optiscaler_output = "fsr22";
+  };
+
+  issnSettingsFile = pkgs.writeText "issn-settings.json" issnSettings;
 in
 self.lib.mkGame { inherit lib pkgs; } {
   name = "infamous-second-son";
@@ -76,14 +152,11 @@ self.lib.mkGame { inherit lib pkgs; } {
   # "inFAMOUS Second Son.exe" is the launcher UI; the game process
   # it spawns is bin/issn-probe.exe. The repacker's "Play inFAMOUS
   # Second Son.exe" convenience wrapper is not the entry point. The
-  # game-folder setting is not preconfigured: launcher/ ships only
-  # assets (icons, Bebas Neue font, its OFL notice), and run.py
-  # defaults ISSN_GAME_DIR to a sibling CUSA00004 folder, which does
-  # not match this repack's in-tree game/. First boot needs the
-  # one-time operator step from the AnkerGames instructions (Game
-  # tab, point the location at the game folder holding eboot.bin,
-  # then PLAY); the pick persists in the relocated issn-launcher
-  # options dir.
+  # launcher has no game-folder default that matches this drop
+  # (launcher/ ships only assets, and run.py defaults ISSN_GAME_DIR
+  # to a sibling CUSA00004 folder), so the preRun seed below writes
+  # the operator-verified pick into the relocated issn-launcher
+  # options dir on first boot and the folder chooser never opens.
   executable = "inFAMOUS Second Son.exe";
 
   # Per README-Windows.txt ("Data"): game saves (user/savedata),
@@ -99,6 +172,18 @@ self.lib.mkGame { inherit lib pkgs; } {
   # verification ladder should confirm no other drive_c path appears
   # on first boot.
   saveLocations = [ "AppData/Roaming/issn-launcher" ];
+
+  # Idempotent first-boot seed of the options file: write it only
+  # when the relocated issn-launcher dir holds none, never touch one
+  # the launcher already owns.
+  preRun = ''
+    __strom_issn_settings="$STROM_GAMEDIR/issn-launcher/settings.json"
+    if [ ! -e "$__strom_issn_settings" ]; then
+      mkdir -p "$(dirname "$__strom_issn_settings")"
+      cp "${issnSettingsFile}" "$__strom_issn_settings"
+      chmod 644 "$__strom_issn_settings"
+    fi
+  '';
 
   gamescope = {
     output-width = 1920;
