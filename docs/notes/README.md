@@ -8,3 +8,4 @@ Update this index when creating, deleting, or significantly revising a note.
 - [home-manager module](design/2026-11-11-home-manager-module.md) — per-user strom preferences and system-wide IPFS gateway variable, approved design (2026-11-11)
 - [home-manager module plan](design/2026-11-11-home-manager-module-plan.md) — implementation plan for the home-manager module design (2026-11-11)
 - [anker launcher static study](research/2026-11-15-ankerlauncher-static-study.md) — static inventory of AnkerGames' official Linux launcher: stack, network surface, torrent/velopack machinery, sign-in gating, licensing; integration deferred (2026-11-15)
+- [out-of-store game data](design/2026-11-15-out-of-store-game-data.md) — dataArchive mode design: game bytes attested by CID+sha256, materialized to state dir at launch, never in the store or on the cache (2026-11-15)
