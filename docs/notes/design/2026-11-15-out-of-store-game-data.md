@@ -142,6 +142,21 @@ State copies are self-healing caches by design, not permanent commitments: re-ma
 Naming landed as proposed (`dataArchive`, `rootFolder` — the root name is provenance, so a `stripRoot` bool lost); `sha256` is raw hex because the comparison is a host-side `sha256sum`, never a nix FOD hash; `size` is advisory (a non-fatal preflight warning naming actual free bytes); the submodule shape keeps a multi-archive list expressible without inviting it yet; and every materializer phase logs `strom-data[<game>]` naming which source satisfied the fetch.
 One deliberate ordering refinement over this note: the materializer runs before the proton instance lock, so a second launch during first-time extraction waits on the data flock and only genuinely concurrent instances reach the instance-lock failure.
 
+## Pivot after the first lived runs (2026-11-15)
+
+The first boots re-framed the storage premise that motivated this mode.
+The "double storage" it removes was waste only while the store was the sole home for both the archive and the tree: with the cold archives living on a spinning disk and the cache audience gated, the established `fetchIpfs` recipe remains the default for games that fit the store, and `dataArchive` settles into its demonstrated role — the opt-in mode for drops whose scale keeps them out of the store entirely.
+The lived costs that shaped this: a one-time extraction per materialization (~2-3 min Infamous, ~5 min SOM) and, for drops whose zips actually compress, a net tree premium (SOM +18 GiB); against native-read speed forever, a store holding zero unfree bytes, and no FOD-GC churn.
+
+Operator decisions (2026-11-15, taken during SOM's first boot):
+- Infamous and SOM keep `dataArchive` locally; no revert.
+The switch commits stand and the dual-form upstream strategy is unchanged.
+- The cache gate is network-level only: the serving channel is restricted to fleet identities, and within it harmonia serves what the store holds (gated audience, not gated content — a fronting proxy with a closure allowlist was considered and declined for now).
+- The spinning disk takes the archives alone ($STROM_ARCHIVES relocation at the environment level; the lib default is unchanged).
+A second nix store for game closures and a full store migration were both declined.
+
+Queued follow-ups: the network-level gate on the mirror module and the archives relocation are host-infra arcs, sequenced after the landing pipeline.
+
 ## Verification plan
 
 A `dataArchive` game exercises the mode end to end at the existing verification ladder (static eval, boot verify, operator playthrough, save-across-relaunch), plus two mode-specific checks: a store-closure assertion that the wrapper references no archive bytes, and a re-materialization check (delete the state dir, relaunch, confirm self-heal).
