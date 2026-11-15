@@ -1,0 +1,35 @@
+{
+  "developers": [
+    "Compulsion Games"
+  ],
+  "genres": [
+    "Action",
+    "Adventure"
+  ],
+  "hero": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1934570/56f64e713504dd2558077d038eb7470c8689a559/header.jpg?t=1791208700",
+  "long": "SOUTH OF MIDNIGHT WEAVER'S EDITION\n\nWEAVER\u2019S EDITION:\nImmerse yourself in the macabre and fantastical world of South of Midnight. The Weaver\u2019s Edition brings together the full game and its additional digital content (in English), celebrating the craft, music, and stories that shaped the game\u2019s journey:\n\u00b7       South of Midnight Artbook\n\u00b7       Original Soundtrack composed by Olivier Deriviere\n\u00b7       The Boo-Hag Comic book by Rob Guillory\n\u00b7       Music Video: Songs & Tales of South of Midnight\n\u00b7       Documentary: Weaving Hazel\u2019s Journey, Director\u2019s Cut\n\nAbout the Game\nUNRAVEL THE PAST\nFrom the creators of Contrast and We Happy Few, South of Midnight is a spellbinding third person action-adventure game set in the American Deep South.\n\nAs Hazel, you will explore the mythos and encounter creatures of Southern folklore in a macabre and fantastical world. When disaster strikes her hometown, Hazel is called to become a Weaver: a magical mender of broken bonds and spirits. Imbued with these new abilities, Hazel will confront and subdue dangerous creatures, untangle the webs of her own family's shared past and - if she's lucky - find her way to a place that feels like home.\n\nA DARK MODERN FOLKTALE\n When a hurricane rips through Prospero, Hazel is pulled into a Southern Gothic world of memory made real and must embark on a journey to rescue her mother and safeguard her hometown. In this folktale for modern times, Hazel will need to reconcile the weight of family, history, and legacy against her own identity.\n\nCONFRONT MYTHICAL CREATURES\nWield an ancient power to restore creatures and uncover the traumas that consume them. Cast weaving magic to fight destructive Haints, explore the diverse regions of the South, and reweave the tears in the Grand Tapestry.\n\nHAUNTING BEAUTY OF THE GOTHIC SOUTH\nDiscover the lush, decayed county of Prospero and its locals. Experience a crafted visual style, touching storytelling, and immersive music inspired by the complex and rich history of the South.",
+  "lutris": "https://lutris.net/games/south-of-midnight/",
+  "name": "South of Midnight",
+  "screenshots": [
+    "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1934570/ss_40596f6708fcabef80fb7ef72c1b03e4134a3869.1920x1080.jpg?t=1791208700",
+    "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1934570/ss_d00b68da2754c5003dc01f73a62365bc8de03c1a.1920x1080.jpg?t=1791208700",
+    "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1934570/ss_103bb6df9ddfd8e93cbe28ad2066e4a2bfbce54e.1920x1080.jpg?t=1791208700",
+    "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1934570/ss_49c8bb3ebf011820f9069e91eaf2d346d65bda19.1920x1080.jpg?t=1791208700",
+    "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1934570/ss_592785179712f4f4a22dee03e68bd7204a6ecfa7.1920x1080.jpg?t=1791208700",
+    "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1934570/ss_d55880395d165fae7086311c306dbc598160da84.1920x1080.jpg?t=1791208700",
+    "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1934570/ss_176b21b4e07b7d2cadec6317c3cbcb13bea0a1d9.1920x1080.jpg?t=1791208700",
+    "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1934570/ss_eb127afa9163c723bc51b2ac61175b468e3eed87.1920x1080.jpg?t=1791208700"
+  ],
+  "short": "South of Midnight is a new action-adventure from Compulsion Games. Explore the mythos and confront mysterious creatures of the Deep South in this modern folktale while learning to weave an ancient power to surmount obstacles and unravel your family\u2019s hidden past.",
+  "steam_appid": 1934570,
+  "tags": [
+    "Single-player",
+    "Steam Achievements",
+    "Full controller support",
+    "Captions available",
+    "Steam Cloud",
+    "HDR available",
+    "Family Sharing"
+  ],
+  "year": 2025
+}
