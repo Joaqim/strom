@@ -523,55 +523,68 @@ in
     );
 
     outputs.payload =
-      let
-        # The base is what the desktop overlay presents with no layer
-        # selected: `_gameData` plus any tree a recipe stacks above it
-        # unconditionally (half-life-uplink's expansion over vanilla
-        # Half-Life). The player-selectable `modLayers` are published as
-        # layers of their own, so they are taken out here even when the
-        # option defaults select them -- otherwise a default-on layer
-        # (FF8's FFNx) would be baked into the base as well as offered as
-        # a toggle.
-        layerTrees = map (l: toString l.tree) game.modLayers;
-        lowers = builtins.filter (l: !(builtins.elem (toString l) layerTrees)) game.bwrap.overlay.lowers;
-        tree =
-          pkgs.runCommand "${game.name}-android-tree"
-            {
-              passthru = {
-                gameData = game._gameData;
-                inherit lowers;
-                # The tree's listing in ipfs-walk.py's format, to pin
-                # beside the tree and record as `manifest` on the fetch:
-                # `nix build .#androidPayloads.<slug>.fileManifest`. One
-                # small file a client fetches instead of walking the DAG
-                # entry by entry.
-                fileManifest =
-                  pkgs.runCommand "${game.name}-tree-manifest" { nativeBuildInputs = [ pkgs.python3 ]; }
-                    ''
-                      python3 ${../tree-manifest.py} ${tree} > "$out"
-                    '';
-              };
-            }
-            ''
-              mkdir -p "$out"
+      # An out-of-store game (dataArchive) has no store tree to pin:
+      # the bytes live only in the operator's archive dir and the
+      # materialized state copy, so building this derivation would
+      # either fail confusingly against the $STROM_GAMEDIR lower
+      # literal or, worse, pull the archive into a derivation -- the
+      # exact thing the mode exists to prevent. The phone fetches by
+      # CID client-side; publishing that path is a future arc, and the
+      # manifest's payload stays null until it lands (the default
+      # below already yields null for a dataArchive game's empty
+      # ipfsSources).
+      if game.dataArchive != null then
+        throw "strom: ${game.name}: android payload is not yet supported for dataArchive games (the game's bytes never enter the nix store; a phone-side archive fetch is a future arc)"
+      else
+        let
+          # The base is what the desktop overlay presents with no layer
+          # selected: `_gameData` plus any tree a recipe stacks above it
+          # unconditionally (half-life-uplink's expansion over vanilla
+          # Half-Life). The player-selectable `modLayers` are published as
+          # layers of their own, so they are taken out here even when the
+          # option defaults select them -- otherwise a default-on layer
+          # (FF8's FFNx) would be baked into the base as well as offered as
+          # a toggle.
+          layerTrees = map (l: toString l.tree) game.modLayers;
+          lowers = builtins.filter (l: !(builtins.elem (toString l) layerTrees)) game.bwrap.overlay.lowers;
+          tree =
+            pkgs.runCommand "${game.name}-android-tree"
+              {
+                passthru = {
+                  gameData = game._gameData;
+                  inherit lowers;
+                  # The tree's listing in ipfs-walk.py's format, to pin
+                  # beside the tree and record as `manifest` on the fetch:
+                  # `nix build .#androidPayloads.<slug>.fileManifest`. One
+                  # small file a client fetches instead of walking the DAG
+                  # entry by entry.
+                  fileManifest =
+                    pkgs.runCommand "${game.name}-tree-manifest" { nativeBuildInputs = [ pkgs.python3 ]; }
+                      ''
+                        python3 ${../tree-manifest.py} ${tree} > "$out"
+                      '';
+                };
+              }
+              ''
+                mkdir -p "$out"
 
-              # Copy lowest priority first so higher ones overwrite, which
-              # reproduces the overlay's merge order (lib/mk-game.nix
-              # `overlay.lowers`, first = highest priority).
-              #
-              # -L dereferences: a recipe may symlink discs in from the store
-              # (games/final-fantasy-vii does), and a symlink into /nix/store
-              # means nothing on a phone.
-              ${lib.concatMapStringsSep "\n" (l: ''
-                cp -rL --no-preserve=mode,ownership,timestamps -T "${l}" "$out"
-              '') (lib.reverseList lowers)}
+                # Copy lowest priority first so higher ones overwrite, which
+                # reproduces the overlay's merge order (lib/mk-game.nix
+                # `overlay.lowers`, first = highest priority).
+                #
+                # -L dereferences: a recipe may symlink discs in from the store
+                # (games/final-fantasy-vii does), and a symlink into /nix/store
+                # means nothing on a phone.
+                ${lib.concatMapStringsSep "\n" (l: ''
+                  cp -rL --no-preserve=mode,ownership,timestamps -T "${l}" "$out"
+                '') (lib.reverseList lowers)}
 
-              chmod -R u+w "$out"
-              test -n "$(ls -A "$out")" \
-                || (echo "android: empty payload for ${game.name}" >&2; exit 1)
-            '';
-      in
-      tree;
+                chmod -R u+w "$out"
+                test -n "$(ls -A "$out")" \
+                  || (echo "android: empty payload for ${game.name}" >&2; exit 1)
+              '';
+        in
+        tree;
 
     outputs.manifestAttrs =
       let

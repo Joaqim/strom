@@ -111,6 +111,32 @@ let
       overlayExe =
         if lib.hasPrefix "/" cfg.executable then cfg.executable else "$STROM_OVERLAY/${cfg.executable}";
 
+      # Out-of-store mode (dataArchive): the game's bytes never enter a
+      # derivation. The materialized dir is named by the archive
+      # sha256's first 12 hex chars -- deterministic, so relaunches and
+      # re-materialization converge on the same path -- and preHook
+      # fills it from the attested sources before bwrap starts (see
+      # lib/data-materializer.sh). The inner script expands the
+      # $STROM_GAMEDIR literal in its lowerdir exactly as it already
+      # does for upperdir/workdir.
+      dataDirName = lib.substring 0 12 cfg.dataArchive.sha256;
+      # The base lower every other layer sits above. Forcing this also
+      # forces the src/dataArchive exclusivity check, so a game that
+      # sets both (or neither) fails with one clear error at wrapper
+      # evaluation instead of a deep one from the store machinery.
+      baseLower =
+        if cfg.dataArchive != null then
+          lib.throwIfNot (cfg.src == null && cfg.buildScript == "")
+            "strom: ${cfg.name}: dataArchive is mutually exclusive with src and buildScript: an out-of-store game's bytes never enter a derivation, so set dataArchive alone"
+            "$STROM_GAMEDIR/.strom-data/${dataDirName}"
+        else
+          "${cfg._gameData}";
+      # Host-side path to the base game data for preHook fragments
+      # (copyGlobs): the store path for a built game, the materialized
+      # state-dir path for a dataArchive game.
+      baseDataRef =
+        if cfg.dataArchive != null then "$STROM_GAMEDIR/.strom-data/${dataDirName}" else "${cfg._gameData}";
+
       # Schema for the launcher's per-game customize view, published as
       # `passthru.settingsSchema` on the wrapper derivation (the couch
       # launcher bakes it into its manifest at build time).
@@ -227,7 +253,82 @@ let
           description = "Game name (used for \$STROM_STATE_HOME/<name>, default ~/.strom/<name>).";
         };
         src = mkOption {
-          type = types.package;
+          type = types.nullOr types.package;
+          default = null;
+          description = ''
+            The game data source, materialized in the nix store: a
+            pinned tree or bundle (`fetchIpfs`), an archive a
+            `buildScript` unpacks, or any derivation. Null exactly when
+            `dataArchive` carries the game instead; setting both is an
+            evaluation error (see `dataArchive`).
+          '';
+        };
+        dataArchive = mkOption {
+          type = types.nullOr (
+            types.submodule {
+              options = {
+                cid = mkOption {
+                  type = types.str;
+                  description = ''
+                    Content ID of the curated archive on the local kubo
+                    gateway. Public gateways are never consulted for
+                    these bytes.
+                  '';
+                };
+                sha256 = mkOption {
+                  type = types.strMatching "[0-9a-f]{64}";
+                  description = ''
+                    Lower-case hex sha256 of the curated archive,
+                    verified host-side before any extraction. Its first
+                    12 hex chars name the materialized state dir, so
+                    the path is stable across relaunches and
+                    re-materialization.
+                  '';
+                };
+                size = mkOption {
+                  type = types.ints.positive;
+                  description = ''
+                    Archive size in bytes. Advisory: a loud preflight
+                    warning when the state filesystem holds less than
+                    size + 20 percent free, never a launch refusal.
+                  '';
+                };
+                fileName = mkOption {
+                  type = types.str;
+                  description = ''
+                    Name of the curated archive under $STROM_ARCHIVES
+                    (default /var/lib/steam/game-archives), the
+                    first-resolution source.
+                  '';
+                };
+                rootFolder = mkOption {
+                  type = types.str;
+                  description = ''
+                    The archive's single root folder, stripped on
+                    extraction so the materialized dir holds its
+                    contents at the top level and `executable` stays a
+                    path from the game root.
+                  '';
+                };
+              };
+            }
+          );
+          default = null;
+          description = ''
+            Out-of-store game data: the flake records attestable
+            metadata only, and the wrapper materializes the archive
+            into $STROM_GAMEDIR/.strom-data/<sha256-prefix> at launch
+            (static archive dir first, then the local kubo gateway;
+            sha256 verified before extraction; see
+            lib/data-materializer.sh). The wrapper's store closure then
+            holds only free software and no cache can serve the game
+            bytes. Mutually exclusive with `src` and `buildScript`.
+            The trade, stated plainly: nix no longer verifies the game
+            tree -- the archive hash is the trust boundary, checked at
+            materialization time, and first launch pays the extraction
+            cost. One archive per game today; the submodule shape keeps
+            a list expressible later without migrating recipes.
+          '';
         };
         runtime = mkOption {
           type = types.enum [
@@ -307,8 +408,16 @@ let
         };
         ipfsSources = mkOption {
           type = types.listOf types.package;
-          default = [ cfg.src ] ++ lib.optionals (cfg.runtime == "pcsx2") [ cfg.pcsx2.bios ];
-          defaultText = lib.literalMD "`[ src ]` plus the PS2 BIOS for `runtime = pcsx2`.";
+          default =
+            if cfg.src == null then
+              [ ]
+            else
+              [ cfg.src ] ++ lib.optionals (cfg.runtime == "pcsx2") [ cfg.pcsx2.bios ];
+          defaultText = lib.literalMD ''
+            `[ src ]` plus the PS2 BIOS for `runtime = pcsx2`; `[ ]`
+            for `dataArchive` games, whose bytes are locally pinned and
+            have no store source to publish.
+          '';
         };
 
         # The game data: the overlay's lower layer, and the tree Android
@@ -318,12 +427,16 @@ let
         # build) IS the game data, with no build in between: the desktop
         # and the phone fetch the same CID. A buildScript still turns an
         # archive into a tree for the game that has not been pinned as
-        # one yet.
+        # one yet. A `dataArchive` game has no `_gameData` at all -- its
+        # base lower is a state-dir literal materialized at launch -- so
+        # forcing this option for one is a construction error.
         _gameData = mkOption {
           type = types.package;
           internal = true;
           default =
-            if cfg.buildScript == "" && ((cfg.src.directory or false) || (cfg.src.bundle or false)) then
+            if cfg.src == null then
+              throw "strom: ${cfg.name}: no game data: pass either src (a store source) or dataArchive (an out-of-store archive materialized at launch)"
+            else if cfg.buildScript == "" && ((cfg.src.directory or false) || (cfg.src.bundle or false)) then
               cfg.src
             else
               pkgs.runCommandLocal "${cfg.name}-data" { inherit (cfg) nativeBuildInputs src; } (
@@ -457,12 +570,14 @@ let
               # inner script (command, below) mounts fuse-overlayfs onto it
               # IN-NS so it auto-vanishes with the namespace on teardown.
               # Lowers are first = highest priority: the mod trees the
-              # current options select, then the base game. A recipe adds
+              # current options select, then the base game (a store path,
+              # or the .strom-data literal for a dataArchive game -- see
+              # baseLower). A recipe adds
               # unconditional lowers with `lib.mkBefore [...]` on this same
               # option; anything a player can toggle belongs in `modLayers`
               # instead, so Android offers exactly what the desktop mounts.
               overlay = {
-                lowers = map toString (map (l: l.tree) selectedLayers) ++ [ "${cfg._gameData}" ];
+                lowers = map toString (map (l: l.tree) selectedLayers) ++ [ baseLower ];
                 upper = "$STROM_GAMEDIR/.strom-overlay/upper";
                 work = "$STROM_GAMEDIR/.strom-overlay/work";
                 dest = "/tmp/.strom-overlay";
@@ -479,6 +594,27 @@ let
                   ${lib.optionalString (cfg.runtime == "proton") ''
                     "$STROM_CACHEDIR/umu" "$STROM_CACHEDIR/umu-protonfixes" "$HOME/.cache/wine"
                   ''}
+
+                ${lib.optionalString (cfg.dataArchive != null) ''
+                  # Out-of-store mode: materialize the game archive into
+                  # the state dir before bwrap starts, so the inner
+                  # overlay mount (whose base lower is the .strom-data
+                  # literal below) finds it present. The fragment blocks
+                  # on a flock during first-time extraction and is a
+                  # fast no-op once the final dir exists; it runs before
+                  # the proton instance lock, which stays reserved for
+                  # genuinely concurrent instances.
+                  STROM_DATAMAT_NAME=${lib.escapeShellArg cfg.name}
+                  STROM_DATAMAT_7ZZ=${pkgs._7zz}/bin/7zz
+                  STROM_DATAMAT_CURL=${pkgs.curl}/bin/curl
+                  STROM_DATAMAT_CID=${cfg.dataArchive.cid}
+                  STROM_DATAMAT_SHA256=${cfg.dataArchive.sha256}
+                  STROM_DATAMAT_SIZE=${toString cfg.dataArchive.size}
+                  STROM_DATAMAT_FILENAME=${lib.escapeShellArg cfg.dataArchive.fileName}
+                  STROM_DATAMAT_ROOTFOLDER=${lib.escapeShellArg cfg.dataArchive.rootFolder}
+                  STROM_DATAMAT_DEST="$STROM_GAMEDIR/.strom-data/${dataDirName}"
+                  ${builtins.readFile ./data-materializer.sh}
+                ''}
 
                 ${lib.optionalString (!cfg.enableGamescope) ''
                   # No-gamescope builds reach the HOST X server through the
@@ -528,10 +664,14 @@ let
                 ${lib.optionalString (cfg.copyGlobs != [ ]) ''
                   # Materialize files Wine/Proton can't copy-up cleanly
                   # (mmap+MAP_PRIVATE writes break overlayfs copy-up).
+                  # baseDataRef is the store tree, or the materialized
+                  # .strom-data dir for a dataArchive game (its data is
+                  # already host-side, but copy-up still needs a real
+                  # copy for the mmap pattern).
                   ${lib.concatMapStringsSep "\n" (g: ''
-                    if [ ! -e "$STROM_GAMEDIR/${g}" ] && [ -e "${cfg._gameData}/${g}" ]; then
+                    if [ ! -e "$STROM_GAMEDIR/${g}" ] && [ -e "${baseDataRef}/${g}" ]; then
                       mkdir -p "$STROM_GAMEDIR/$(dirname "${g}")"
-                      cp -r "${cfg._gameData}/${g}" "$STROM_GAMEDIR/${g}"
+                      cp -r "${baseDataRef}/${g}" "$STROM_GAMEDIR/${g}"
                       chmod -R u+w "$STROM_GAMEDIR/${g}"
                     fi
                   '') cfg.copyGlobs}
