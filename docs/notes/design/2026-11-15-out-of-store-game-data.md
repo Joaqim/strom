@@ -22,8 +22,11 @@ Goal: an `mkGame` mode in which the flake references game data by attestable met
 Non-goals for this arc: migrating the existing `fetchIpfs` games (follow-up arcs, one per game), hardening or relocating harmonia, and any public-gateway fetch of unfree bytes (the local kubo gateway and the static archives directory are the only sources).
 
 A pivot under consideration but not chosen: a filtered cache exposure, fronting harmonia with a proxy that only forwards narinfo/NAR requests for an allowlisted closure.
-`meta.unfree = true` on the game derivations is semantically correct and worth setting regardless — it gates evaluation for `allowUnfree = false` consumers — but it blocks nothing by itself: unfree paths are absent from cache.nixos.org because hydra never builds them, not because a cache refuses to serve them, and harmonia serves by store path without consulting meta.
+That filter is the only mechanism that could actually block serving, because caches are path-addressed and never consult derivation meta: unfree paths are absent from cache.nixos.org since hydra never builds them, not because a cache refuses to serve them, and harmonia likewise serves by store path.
 On a host that builds its games locally, the only real filters are "the bytes never enter this store" (this mode) or an explicit fronting allowlist; the mode makes the filter question moot for these games.
+
+`meta.unfree = true` is deferred for repository-wide consideration: no existing game sets it, a consumer expects a new game to just work (the flag fails evaluation for `allowUnfree = false` consumers), and flagging only these two would make them the exceptions in the catalog.
+The eventual decision belongs to the whole games tree, not to these patches.
 
 ## Mode contract
 
@@ -91,7 +94,7 @@ Both games are bound for upstream radicle patches that diverge from upstream/mas
 Games are auto-discovered (`builtins.readDir ./games` in the flake's `legacyPackages` wiring), so a game patch is purely a new `games/<slug>/` directory and cannot conflict with the stacked develop patches.
 Upstream master has no `dataArchive`, so the patch carries the game in the established `fetchIpfs` form, and this mode applies as a fork-develop local layer:
 
-- The upstream-form game file (fetchIpfs FOD plus buildScript, `meta.unfree = true`) is the unit cherry-picked onto the clean base; it is never contaminated by local-mode content.
+- The upstream-form game file (fetchIpfs FOD plus buildScript) is the unit cherry-picked onto the clean base; it is never contaminated by local-mode content.
 - The dataArchive lib extension and a per-game switch commit (src mechanism swap only) live on the fork's develop and are never cherry-picked.
 - The pipeline's trees-converge check is deliberately relaxed for these two game files: convergence is expected modulo exactly the switch commits, provable by a diff that shows only the src-mechanism change.
 - Patch-form verification stays eval-level: the patch's FOD hash equals the curated zip's sha256 that the local materializer already extracted and verified byte-for-byte at runtime, so a worktree build of the upstream form re-verifies almost nothing — and it would transiently pull the full zip plus extracted tree into this host's store, recreating the exposure and the 150 GB growth for the lifetime of the worktree result.
