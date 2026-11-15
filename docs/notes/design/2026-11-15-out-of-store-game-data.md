@@ -2,7 +2,7 @@
 
 Working note recording the approved design direction for games whose bytes never enter the nix store.
 Date: 2026-11-15.
-Status: direction approved in session (three operator decisions recorded below); pending implementation arcs.
+Status: implemented on develop — lib mode 7304400 (`lib/mk-game.nix`, `lib/data-materializer.sh`, android guard), infamous switch 54863a5, closure check d47220c; verification ladder pending.
 
 ## Problem
 
@@ -48,7 +48,7 @@ A new `dataArchive` option on `mkGame`, mutually exclusive with `src` plus `buil
 ```nix
 dataArchive = {
   cid = "bafy...";
-  sha256 = "sha256-...";       # of the curated zip
+  sha256 = "<64 hex chars>";   # raw sha256sum form of the curated zip (not SRI)
   size = 22999779341;          # bytes, for preflight and progress display
   fileName = "infamous-second-son-ankergames.zip";  # curated archive name
   rootFolder = "Infamous Second Son";               # single-root layout, stripped on extract
@@ -77,7 +77,8 @@ The fragment runs in the wrapper's preHook (host side, before bwrap), generated 
 - Atomicity: extract into `.strom-data/.partial-<pid>/`, verify, then rename; presence of the final directory is the completion marker.
 - Concurrency: a flock on `.strom-data/.lock` so a second launch during first-time extraction waits instead of erroring (the proton instance lock already reserves failure for genuinely concurrent instances).
 - Space: the gateway path downloads the zip to a temporary file first (peak usage = zip plus extracted); the archive-directory path streams from the local file with no second copy.
-- Tools: `_7zz` for extraction — both drops are zstd-in-zip, verified extractable by the pinned `_7zz` 26.02 this session — and `curl` for the gateway fetch; both are free software and stay in the wrapper's closure.
+- Tools: `_7zz` for extraction of the curated zips (both are `7zz a -tzip` deflate archives, so decoder coverage is self-evident) and `curl` for the gateway fetch; both are free software and stay in the wrapper's closure.
+  The origin formats are irrelevant to the materializer but recorded for curation context: the Infamous origin is zstd-in-zip that `_7zz` 26.02 decodes, while the SOM origin is a Rar5 (with a cosmetic `.zip` filename) that `_7zz` 26.02 cannot decode at all — curation used `unrar` 7.3.2 for it.
 - After a successful extraction the downloaded zip is deleted; the static archive in `$STROM_ARCHIVES` is never modified.
 
 State-dir deletion or corruption self-heals: the next launch re-materializes from the same attested sources, which also retires the FOD-garbage-collected-and-reseeded failure mode recorded in memory for the current recipe.
@@ -92,8 +93,9 @@ First launch pays the extraction cost (tens of GB from local disk, minutes, with
 
 ## Android
 
-Unaffected by construction: the phone already fetches by CID client-side, and `dataArchive.cid` is exactly the metadata that path consumes.
-`ipfsSources` for a `dataArchive` game is the archive's CID alone.
+Unaffected by construction in principle: the phone fetches by CID client-side and `dataArchive.cid` is exactly the metadata that path will consume.
+As landed (7304400), a `dataArchive` game's metadata carries `cids = [ ]` and the `androidPayloads` derivation throws a clear not-yet-supported message, while the android manifest and metadata-sync gates stay green.
+Wiring `dataArchive.cid` into the client-side fetch is a follow-up for when that consumer gains archive-fetch support; the deviation from "the CID alone" is deliberate laziness, not an omission.
 
 ## Curation pipeline delta
 
@@ -101,7 +103,7 @@ The curated-zip recipe is unchanged up to and including the kubo pin: curation w
 CIDs follow the AGENTS.md 44 MiB rule — files above it must be added with `--cid-version=1`, which at these sizes is mandatory, not stylistic (a `--raw-leaves`-only root disagrees with what pin infrastructure serves).
 What changes is consumption — the game file records `dataArchive` metadata instead of a `fetchIpfs` call.
 For South of Midnight the operator approved five exclusions: the two root debris files, the root `Back Crack/` RUNE-emu fragment, the root `Bonus/` soundtrack (1.95 GB FLAC+MP3), and the whole `DigitalExtras` tree including its own Engine/ subtree (24.3 GB extracted, documentaries and videos, not needed to play); the exclusions go into the provenance comment exactly like the Redist/ precedent.
-The curated zip holds `SouthOfMidnight/` complete otherwise — Midnight/, Engine/ (plausibly load-bearing), GamingServices/, installscript.vdf, NOTICE.txt — roughly 64.6 GiB extracted, ~55 GiB zipped.
+The curated zip holds `SouthOfMidnight/` complete otherwise — Midnight/, Engine/ (plausibly load-bearing), GamingServices/, installscript.vdf, NOTICE.txt — 577 files plus 64 dir entries, 60.1 GiB extracted, 45,358,644,519 bytes (42.2 GiB) zipped; manifest equality with the origin is machine-verified modulo exactly those five exclusions (231 files).
 
 ## Upstream patch relationship and local divergence
 
@@ -125,21 +127,20 @@ Infamous is not a PC port in the usual sense: it is the issn_pc project (GPL v2+
 It is Vulkan-1.3-native, writes settings and lock files beside its exe (`issn.ini`, `.iss-launcher.lock`, `launcher/`, `out/`), and its launcher wants the `game/` folder selected once; the overlay upper and a `preRun` carry that.
 The host GPU (RX 9070, RADV, Vulkan 1.4.363) clears the requirement and enables FSR 4.
 
-South of Midnight is a UE5 repack whose crack class changed with the completed transfer: the v1.3.0 RAR carries `installscript.vdf` plus a Steamworks Steamv152 RUNE-emu trio in a root `Back Crack/` fragment, so the working hypothesis is the Steam build with emu (the GDK read came from the partial artifact and is retracted).
-`GamingServices/` is a single vestigial `GamingRepair.exe`.
-The recipe arc verifies whether the emu is applied inside `Midnight/Binaries/ThirdParty/Steamworks` or ships only as the root fragment, and applies the RUNE/lsteamclient rule accordingly.
+South of Midnight's crack class is settled by the completed curation (2026-11-15): the build is the GDK/Xbox runtime — `Midnight/Binaries/Win64/` holds `SouthOfMidnight.exe` with `libHttpClient.GDK.dll`, `Microsoft.Xbox.Services.GDK.C.Thunks.dll`, `XCurl.dll`, and `MicrosoftGame.config`, and no `steam_api` anywhere under `Midnight/`.
+The RUNE emu is applied in-tree at `SouthOfMidnight/Engine/Binaries/ThirdParty/Steamworks/Steamv152/Win64/` (`steam_api64.dll` 1,025,632 B, `steam_api64.rne` renamed original, `steam_emu.ini`), and the root `Back Crack/` fragment the RAR also carried was a byte-identical duplicate of exactly that trio (equal sha256 on both sides in the origin manifest), excluded by curation.
+`GamingServices/` is a single vestigial `GamingRepair.exe` (570,984 B), kept.
+The recipe arc applies the RUNE preRun rule for the Engine Steamworks path.
 
 ## Disk end-state (operator decision 2026-11-15)
 
 The steam pool cannot host the build peak (origin 70.8 GiB + kept-set extraction 60.2 GiB + curated zip ~55 GiB) nor the permanent end state (both curated zips plus both state copies); curation stages extraction and zip construction on the /nix dataset (198 GiB free) and moves only the finished zip back.
 State copies are self-healing caches by design, not permanent commitments: re-materialization from the attested sources means a copy can be deleted for space and rebuilt on demand, so arc 3 frees or redirects each game's materialized copy before its playtest rather than pre-reserving ~100 GiB that the pool does not have.
 
-## Open questions for the implementation arcs
+## Open questions resolved by the implementation (7304400)
 
-- Option and field naming (`dataArchive` proposed; `rootFolder` vs a `stripRoot` bool).
-- Whether `size` is advisory or enforced as a preflight check with a clear out-of-space error.
-- Multi-archive games (split zips): out of scope until one arrives, but the contract should not preclude a list.
-- Whether the materializer reports CID-vs-sha256 provenance of which source satisfied the fetch, for the operator log.
+Naming landed as proposed (`dataArchive`, `rootFolder` — the root name is provenance, so a `stripRoot` bool lost); `sha256` is raw hex because the comparison is a host-side `sha256sum`, never a nix FOD hash; `size` is advisory (a non-fatal preflight warning naming actual free bytes); the submodule shape keeps a multi-archive list expressible without inviting it yet; and every materializer phase logs `strom-data[<game>]` naming which source satisfied the fetch.
+One deliberate ordering refinement over this note: the materializer runs before the proton instance lock, so a second launch during first-time extraction waits on the data flock and only genuinely concurrent instances reach the instance-lock failure.
 
 ## Verification plan
 
