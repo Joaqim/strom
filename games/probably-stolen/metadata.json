@@ -1,0 +1,24 @@
+{
+  "android": {
+    "backend": "gamenative",
+    "gamenative": {
+      "containerConfig": {
+        "executablePath": "Probably Stolen.exe"
+      }
+    },
+    "schema": 1
+  },
+  "appid": 4348910,
+  "cids": [
+    "bafybeihf4eeb44pin76jw5wigswxusu6ujyffoovegu36hz4kjjf7f7pvm"
+  ],
+  "description": "Probably Stolen - Cyberpunk Shopkeeper Sim (Questing Goose Studio 2026, fence-shop management on a dystopian space station, Unity 2021.3 Mono via Proton)",
+  "developers": [
+    "Questing Goose Studio"
+  ],
+  "runtime": "proton",
+  "tags": [
+    "Single-player"
+  ],
+  "year": 2026
+}
