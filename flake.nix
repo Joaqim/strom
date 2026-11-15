@@ -58,13 +58,26 @@
     {
       formatter = forAllSystems (system: nixpkgs.legacyPackages.${system}.nixfmt-tree);
 
-      checks = forAllSystems (system: {
-        pre-commit-check = mkPreCommit system;
-        # Compile + (future) unit-test strom-run in isolation, so it can be
-        # built via `nix build .#checks.<system>.strom-run` without running
-        # the whole-flake `nix flake check`.
-        strom-run = self.legacyPackages.${system}.scripts.strom-run;
-      });
+      checks =
+        forAllSystems (system: {
+          pre-commit-check = mkPreCommit system;
+          # Compile + (future) unit-test strom-run in isolation, so it can be
+          # built via `nix build .#checks.<system>.strom-run` without running
+          # the whole-flake `nix flake check`.
+          strom-run = self.legacyPackages.${system}.scripts.strom-run;
+        })
+        // {
+          # x86_64 only, like the games themselves: the assertion builds a
+          # synthetic game wrapper through the real mkGame lib.
+          x86_64-linux.data-archive-closure =
+            nixpkgs.legacyPackages.x86_64-linux.callPackage ./test/data-archive-closure.nix
+              {
+                mkGame = self.lib.mkGame {
+                  lib = nixpkgs.lib;
+                  pkgs = nixpkgs.legacyPackages.x86_64-linux;
+                };
+              };
+        };
 
       devShells = forAllSystems (
         system:
