@@ -6,9 +6,9 @@ Status: direction approved in session (three operator decisions recorded below);
 
 ## Problem
 
-Two drops waiting in `/var/lib/steam/game-archives` are an order of magnitude larger than anything packaged so far: Infamous-Second-Son-AnkerGames.zip (22,999,779,341 bytes) and South-of-Midnight.zip (36,277,583,872 bytes).
-The established recipe materializes game bytes twice: once as the `fetchIpfs` fixed-output derivation (the canonical zip) and once as the extracted tree in the game's `_gameData` output.
-For these two that is roughly 59 GB of zips plus an estimated 80-100 GB of extracted trees, into a store with 198 GB free — near-capacity after one arc.
+Two drops waiting in `/var/lib/steam/game-archives` are an order of magnitude larger than anything packaged so far: Infamous-Second-Son-AnkerGames.zip (22,999,779,341 bytes) and the South of Midnight v1.3.0 repack — a 70,804,351,871-byte Rar5 named South-of-Midnight.zip whose transfer was still running at orientation time, so the 36 GB zip then visible was a partial artifact and every reading taken from it is void.
+The established recipe materializes game bytes twice: once as the `fetchIpfs` fixed-output derivation (the canonical archive) and once as the extracted tree in the game's `_gameData` output.
+For these two that is roughly 94 GB of origin archives plus an estimated 100 GB of extracted trees, into a store with 198 GB free — near-capacity after one arc.
 
 The second consequence is redistribution exposure.
 harmonia serves every path present in this host's store on the tailnet, and game trees are store paths today; `probably-stolen` and `tom-the-postgirl-inner` outputs are present and therefore served right now.
@@ -100,7 +100,8 @@ Unaffected by construction: the phone already fetches by CID client-side, and `d
 The curated-zip recipe is unchanged up to and including the kubo pin: curation with exclusions, per-file manifests, provenance comment, local pin.
 CIDs follow the AGENTS.md 44 MiB rule — files above it must be added with `--cid-version=1`, which at these sizes is mandatory, not stylistic (a `--raw-leaves`-only root disagrees with what pin infrastructure serves).
 What changes is consumption — the game file records `dataArchive` metadata instead of a `fetchIpfs` call.
-For South of Midnight the operator approved excluding `DigitalExtras/MidnightPremium` (documentaries and music videos, roughly 14 GB of the zip and 20 GB extracted, not needed to play); the exclusion goes into the provenance comment exactly like the Redist/ precedent.
+For South of Midnight the operator approved five exclusions: the two root debris files, the root `Back Crack/` RUNE-emu fragment, the root `Bonus/` soundtrack (1.95 GB FLAC+MP3), and the whole `DigitalExtras` tree including its own Engine/ subtree (24.3 GB extracted, documentaries and videos, not needed to play); the exclusions go into the provenance comment exactly like the Redist/ precedent.
+The curated zip holds `SouthOfMidnight/` complete otherwise — Midnight/, Engine/ (plausibly load-bearing), GamingServices/, installscript.vdf, NOTICE.txt — roughly 64.6 GiB extracted, ~55 GiB zipped.
 
 ## Upstream patch relationship and local divergence
 
@@ -124,8 +125,14 @@ Infamous is not a PC port in the usual sense: it is the issn_pc project (GPL v2+
 It is Vulkan-1.3-native, writes settings and lock files beside its exe (`issn.ini`, `.iss-launcher.lock`, `launcher/`, `out/`), and its launcher wants the `game/` folder selected once; the overlay upper and a `preRun` carry that.
 The host GPU (RX 9070, RADV, Vulkan 1.4.363) clears the requirement and enables FSR 4.
 
-South of Midnight is the UE5 GDK (Game Pass) build, not Steam: `Microsoft.Xbox.Services.GDK.C Thunks.dll`, `libHttpClient.GDK.dll`, and a bundled `GamingServices/` folder with a repair tool.
-GDK builds under Proton are a known trouble class; the boot-verification stage must budget for studying what the bundled GamingServices folder actually does before trusting it.
+South of Midnight is a UE5 repack whose crack class changed with the completed transfer: the v1.3.0 RAR carries `installscript.vdf` plus a Steamworks Steamv152 RUNE-emu trio in a root `Back Crack/` fragment, so the working hypothesis is the Steam build with emu (the GDK read came from the partial artifact and is retracted).
+`GamingServices/` is a single vestigial `GamingRepair.exe`.
+The recipe arc verifies whether the emu is applied inside `Midnight/Binaries/ThirdParty/Steamworks` or ships only as the root fragment, and applies the RUNE/lsteamclient rule accordingly.
+
+## Disk end-state (operator decision 2026-11-15)
+
+The steam pool cannot host the build peak (origin 70.8 GiB + kept-set extraction 60.2 GiB + curated zip ~55 GiB) nor the permanent end state (both curated zips plus both state copies); curation stages extraction and zip construction on the /nix dataset (198 GiB free) and moves only the finished zip back.
+State copies are self-healing caches by design, not permanent commitments: re-materialization from the attested sources means a copy can be deleted for space and rebuilt on demand, so arc 3 frees or redirects each game's materialized copy before its playtest rather than pre-reserving ~100 GiB that the pool does not have.
 
 ## Open questions for the implementation arcs
 
