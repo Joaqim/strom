@@ -10,9 +10,7 @@
     "schema": 1
   },
   "appid": null,
-  "cids": [
-    "bafybeia3l4evuu6ltvtmgvzknn22ad23f4fhxstr5fhnxc5emppp644kue"
-  ],
+  "cids": [],
   "description": "inFAMOUS Second Son (Sucker Punch Productions 2014 PS4 open-world superhero action in a locked-down Seattle, via the issn_pc 0.3.7 GPL community port: shadPS4-derived Vulkan 1.3 core running a PS4 1.07 dump through Proton)",
   "developers": [
     "Sucker Punch Productions"
