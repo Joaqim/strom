@@ -28,6 +28,19 @@ On a host that builds its games locally, the only real filters are "the bytes ne
 `meta.unfree = true` is deferred for repository-wide consideration: no existing game sets it, a consumer expects a new game to just work (the flag fails evaluation for `allowUnfree = false` consumers), and flagging only these two would make them the exceptions in the catalog.
 The eventual decision belongs to the whole games tree, not to these patches.
 
+## Relationship to existing mechanisms
+
+The repo already has a canonical no-archive-in-store shape: `fetchIpfs { bundle = true; }` (14 games) fetches and extracts a reproducible tar.zst inside one fixed-output build, so the archive never lands in the store — only the tree does.
+It does not apply here, for two reasons.
+The tree is the copy this mode removes: a 58 GB uncompressed store tree is exactly what harmonia would serve, and the operator's requirement is bytes-nowhere-derivational.
+And the bundle pipeline routes uploads through the anonymous public pin host, while the operator's policy for these unfree drops is the local kubo pin pipeline only.
+
+Two existing mechanisms carry over as precedent rather than mechanism: `games/magicka` proves state-dir runtime extraction with a completion sentinel (a wineprefix, in kind only), and `copyGlobs` plus the saveLocations relocation loop prove store-tree-to-state-dir materialization at launch.
+The fuse-overlay lower/upper split is unchanged: materialized data acts as the lowest lower, writes copy up to the state dir as today.
+
+AGENTS.md's convergence rule ("pin the game tree, not the installer") labels the zip-plus-buildScript shape the pre-pin state, so the upstream patches deliberately carry a shape the repo considers transitional — that is the probably-stolen and tom-the-postgirl AnkerGames-drop precedent, and convergence for these games cannot route through the public pin host anyway.
+Pin-after-test discipline applies to the public host; the local kubo pin of the curated zip follows the probably-stolen operator precedent instead.
+
 ## Mode contract
 
 A new `dataArchive` option on `mkGame`, mutually exclusive with `src` plus `buildScript`:
@@ -85,6 +98,7 @@ Unaffected by construction: the phone already fetches by CID client-side, and `d
 ## Curation pipeline delta
 
 The curated-zip recipe is unchanged up to and including the kubo pin: curation with exclusions, per-file manifests, provenance comment, local pin.
+CIDs follow the AGENTS.md 44 MiB rule — files above it must be added with `--cid-version=1`, which at these sizes is mandatory, not stylistic (a `--raw-leaves`-only root disagrees with what pin infrastructure serves).
 What changes is consumption — the game file records `dataArchive` metadata instead of a `fetchIpfs` call.
 For South of Midnight the operator approved excluding `DigitalExtras/MidnightPremium` (documentaries and music videos, roughly 14 GB of the zip and 20 GB extracted, not needed to play); the exclusion goes into the provenance comment exactly like the Redist/ precedent.
 
