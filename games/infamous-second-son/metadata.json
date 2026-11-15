@@ -1,0 +1,34 @@
+{
+  "_appid": "Skip Steam: PS4 exclusive with no PC release; the artifact is the issn_pc community port bundled with a PS4 dump.",
+  "android": {
+    "backend": "gamenative",
+    "gamenative": {
+      "containerConfig": {
+        "executablePath": "inFAMOUS Second Son.exe"
+      }
+    },
+    "schema": 1
+  },
+  "appid": null,
+  "cids": [
+    "bafybeia3l4evuu6ltvtmgvzknn22ad23f4fhxstr5fhnxc5emppp644kue"
+  ],
+  "description": "inFAMOUS Second Son (Sucker Punch Productions 2014 PS4 open-world superhero action in a locked-down Seattle, via the issn_pc 0.3.7 GPL community port: shadPS4-derived Vulkan 1.3 core running a PS4 1.07 dump through Proton)",
+  "developers": [
+    "Sucker Punch Productions"
+  ],
+  "genres": [
+    "Action",
+    "Adventure"
+  ],
+  "hero": "https://lutris.net/games/banner/infamous-second-son.jpg",
+  "long": "inFAMOUS Second Son is the 2014 PlayStation 4 open-world action game from Sucker Punch Productions: in a locked-down Seattle, Delsin Rowe absorbs smoke, neon and video powers and turns them on the Department of Unified Protection. This package plays it through issn_pc, a GPL-licensed community Windows port whose shadPS4-derived Vulkan core runs a PlayStation 4 dump of the game.",
+  "lutris": "https://lutris.net/games/infamous-second-son/",
+  "name": "inFAMOUS: Second Son",
+  "runtime": "proton",
+  "short": "Delsin Rowe turns smoke, neon and video powers on the Department of Unified Protection in a locked-down Seattle (Sucker Punch 2014, via the issn_pc community port of a PS4 dump)",
+  "tags": [
+    "Single-player"
+  ],
+  "year": 2014
+}
