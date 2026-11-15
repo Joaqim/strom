@@ -9,9 +9,7 @@
     "schema": 1
   },
   "appid": 1934570,
-  "cids": [
-    "bafybeid5u2vytmwmgs6rcanspuprxsdqpjl6yxftho4tqejdlqqbmbylmu"
-  ],
+  "cids": [],
   "description": "South of Midnight (Compulsion Games 2025 gothic-Southern action-adventure, a weaver's magic through a mythic Deep South, UE 4.27 Windows build via Proton)",
   "runtime": "proton"
 }

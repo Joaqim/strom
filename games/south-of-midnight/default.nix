@@ -2,75 +2,63 @@
   self,
   lib,
   pkgs,
-  fetchIpfs,
-  _7zz,
 }:
 
-let
-  # Operator-curated zip of an AnkerGames pre-installed repack
-  # (https://ankergames.net/game/south-of-midnight, page "South of
-  # Midnight Free Download (v1.3.0)") of the Windows build, Steam appid
-  # 1934570 (South of Midnight, Compulsion Games, published by Xbox Game
-  # Studios, released 2025-04-08; the appid comes from the RUNE emu ini
-  # and Steam appdetails, which resolve 1934570 and have no page for the
-  # 1577010 figure floating around early registration lists). UE 4.27.2
-  # (PCGamingWiki-verified; the tree corroborates: PhysX3 with VS2015
-  # runtimes and Steamworks SDK 1.52, both UE4.27-era, no Chaos). The
-  # binary is a GDK/Xbox-runtime build: Midnight/Binaries/Win64/ holds
-  # SouthOfMidnight.exe with libHttpClient.GDK.dll,
-  # Microsoft.Xbox.Services.GDK.C.Thunks.dll, XCurl.dll and
-  # MicrosoftGame.config, and no steam_api anywhere under Midnight/.
-  # Origin: the site zip South-of-Midnight.zip, 70,804,351,871 bytes --
-  # a RAR 5 archive with recovery record whose .zip extension is
-  # cosmetic -- holding the game tree beside root-level site debris.
-  # The curated zip of the drop minus exactly five exclusions (the
-  # DigitalExtras tree including its Engine/, the Bonus soundtrack, the
-  # root "Back Crack/" trio, AnkerGames.url, "Read Me.txt") is the
-  # canonical artifact: 45,358,644,519 bytes, sha256
-  # 72df1daffc8f82a282f9ef669ac6d6109ca26c66b5089310b678cbb1446e34af,
-  # deflate members, single root folder "SouthOfMidnight" (577 files,
-  # 64 dirs); per-file sha256 manifests of the untouched drop
-  # (/var/lib/steam/game-archives/South-of-Midnight-AnkerGames-origin-
-  # drop.sha256, 808 lines) and of the curated zip's extracted contents
-  # (South-of-Midnight-AnkerGames-zip-contents.sha256, 577 lines) are
-  # byte-identical modulo those exclusions. Steam emu: RUNE family
-  # applied in-tree at Engine/Binaries/ThirdParty/Steamworks/Steamv152/
-  # Win64/ (steam_api64.dll replacing the Steamworks API DLL, original
-  # kept as steam_api64.rne beside it, steam_emu.ini pinning
-  # AppId=1934570); the excluded root "Back Crack/" was a byte-identical
-  # duplicate of that trio. The tree ships no steamclient64.dll, so the
-  # AGENTS.md lsteamclient-disable rule for steamclient-shipping emu
-  # packs does not apply. GamingServices/GamingRepair/GamingRepair.exe
-  # and installscript.vdf are kept redist debris. No non-IPFS mirror of
-  # these bytes exists (the paid Steam build is the only official
-  # source), so fallbackUrl stays empty.
-  src = fetchIpfs {
-    cid = "bafybeid5u2vytmwmgs6rcanspuprxsdqpjl6yxftho4tqejdlqqbmbylmu";
-    fallbackUrl = "";
-    hash = "sha256-ct8dr/yPgqKC+e9mmsbWEJyibGa1CJMQtnjLsURuNK8=";
-    name = "south-of-midnight-ankergames-repack.zip";
-  };
-in
+# Operator-curated zip of an AnkerGames pre-installed repack
+# (https://ankergames.net/game/south-of-midnight, page "South of
+# Midnight Free Download (v1.3.0)") of the Windows build, Steam appid
+# 1934570 (South of Midnight, Compulsion Games, published by Xbox Game
+# Studios, released 2025-04-08; the appid comes from the RUNE emu ini
+# and Steam appdetails, which resolve 1934570 and have no page for the
+# 1577010 figure floating around early registration lists). UE 4.27.2
+# (PCGamingWiki-verified; the tree corroborates: PhysX3 with VS2015
+# runtimes and Steamworks SDK 1.52, both UE4.27-era, no Chaos). The
+# binary is a GDK/Xbox-runtime build: Midnight/Binaries/Win64/ holds
+# SouthOfMidnight.exe with libHttpClient.GDK.dll,
+# Microsoft.Xbox.Services.GDK.C.Thunks.dll, XCurl.dll and
+# MicrosoftGame.config, and no steam_api anywhere under Midnight/.
+# Origin: the site zip South-of-Midnight.zip, 70,804,351,871 bytes --
+# a RAR 5 archive with recovery record whose .zip extension is
+# cosmetic -- holding the game tree beside root-level site debris.
+# The curated zip of the drop minus exactly five exclusions (the
+# DigitalExtras tree including its Engine/, the Bonus soundtrack, the
+# root "Back Crack/" trio, AnkerGames.url, "Read Me.txt") is the
+# canonical artifact: 45,358,644,519 bytes, sha256
+# 72df1daffc8f82a282f9ef669ac6d6109ca26c66b5089310b678cbb1446e34af,
+# deflate members, single root folder "SouthOfMidnight" (577 files,
+# 64 dirs); per-file sha256 manifests of the untouched drop
+# (/var/lib/steam/game-archives/South-of-Midnight-AnkerGames-origin-
+# drop.sha256, 808 lines) and of the curated zip's extracted contents
+# (South-of-Midnight-AnkerGames-zip-contents.sha256, 577 lines) are
+# byte-identical modulo those exclusions. Steam emu: RUNE family
+# applied in-tree at Engine/Binaries/ThirdParty/Steamworks/Steamv152/
+# Win64/ (steam_api64.dll replacing the Steamworks API DLL, original
+# kept as steam_api64.rne beside it, steam_emu.ini pinning
+# AppId=1934570); the excluded root "Back Crack/" was a byte-identical
+# duplicate of that trio. The tree ships no steamclient64.dll, so the
+# AGENTS.md lsteamclient-disable rule for steamclient-shipping emu
+# packs does not apply. GamingServices/GamingRepair/GamingRepair.exe
+# and installscript.vdf are kept redist debris.
+#
+# Consumed out-of-store (dataArchive): the curated zip never enters
+# a derivation; the wrapper materializes it into the state dir at
+# launch from the operator's static archive directory or the local
+# kubo gateway (see lib/data-materializer.sh). This consumption
+# form is fork-develop-local and is never cherry-picked upstream:
+# the upstream radicle patch carries the fetchIpfs + buildScript
+# form over the same curated zip (no non-IPFS mirror of these bytes
+# exists -- the paid Steam build is the only official source -- so
+# its fallbackUrl stays empty).
 self.lib.mkGame { inherit lib pkgs; } {
   name = "south-of-midnight";
 
-  inherit src;
-
-  nativeBuildInputs = [ _7zz ];
-
-  # Curated-zip layout follows the AnkerGames precedent: one root game
-  # folder ("SouthOfMidnight/" with the UE project Midnight/ (Binaries/
-  # Win64/SouthOfMidnight.exe, Content/Paks IoStore set), the Engine/
-  # 4.27 subset carrying the RUNE emu trio, GamingServices/GamingRepair/,
-  # installscript.vdf, NOTICE.txt) and nothing else at the zip root; the
-  # site debris never entered this zip. Members are deflate-compressed;
-  # 7zz extracts cleanly. The /. form of the copy also preserves any
-  # root dotfiles, which a * glob would skip.
-  buildScript = ''
-    mkdir -p "$out"
-    7zz x -y -o"$TMPDIR/extract" "$src" > /dev/null
-    cp -r "$TMPDIR/extract/SouthOfMidnight/." "$out"/
-  '';
+  dataArchive = {
+    cid = "bafybeid5u2vytmwmgs6rcanspuprxsdqpjl6yxftho4tqejdlqqbmbylmu";
+    sha256 = "72df1daffc8f82a282f9ef669ac6d6109ca26c66b5089310b678cbb1446e34af";
+    size = 45358644519;
+    fileName = "South-of-Midnight-AnkerGames-Repack.zip";
+    rootFolder = "SouthOfMidnight";
+  };
 
   runtime = "proton";
 
