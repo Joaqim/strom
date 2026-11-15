@@ -39,6 +39,7 @@ PATCH_BRANCHES=(
     "8b027ef patch-gateway-port-default"
     "e9ce3ee patch-bwrap-container-parent"
     "a4f35d8 patch-zombies-arent-real"
+    "ccd299a patch-probably-stolen"
 )
 
 # `rad patch update` without --base re-derives the base from the default
