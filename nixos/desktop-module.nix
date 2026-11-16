@@ -97,6 +97,25 @@ in
         Group owning the directory created for `stateDir`.
       '';
     };
+
+    archivesDir = lib.mkOption {
+      type = lib.types.str;
+      default = "/var/lib/steam/game-archives";
+      description = ''
+        Root of the static curated-archive directory that dataArchive
+        games' first-launch materializer resolves archives from,
+        exported as STROM_ARCHIVES for every session (mkDefault, so a
+        direct environment.sessionVariables.STROM_ARCHIVES assignment
+        wins). The materializer looks for the game's
+        dataArchive.fileName below this directory before consulting
+        the local kubo gateway, and never modifies anything inside it.
+        The module neither creates nor manages the directory; point it
+        at provisioned storage readable by whoever launches games. The
+        default equals the wrapper's built-in fallback
+        (lib/data-materializer.sh), so a host that leaves this option
+        set behaves exactly as one that exports nothing.
+      '';
+    };
   };
 
   config = lib.mkIf cfg.enable (
@@ -113,6 +132,10 @@ in
 
         # Point the handler (and GUI's launch hand-off) at the configured flake.
         environment.sessionVariables.STROM_FLAKE = cfg.flake;
+
+        # First-resolution source for dataArchive games' materializer
+        # (lib/data-materializer.sh reads $STROM_ARCHIVES).
+        environment.sessionVariables.STROM_ARCHIVES = lib.mkDefault cfg.archivesDir;
       }
 
       (lib.mkIf (cfg.stateDir != null) {
