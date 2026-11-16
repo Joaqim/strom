@@ -1,0 +1,39 @@
+{
+  "developers": [
+    "LuisDev"
+  ],
+  "genres": [
+    "Action",
+    "Indie",
+    "Simulation",
+    "Strategy"
+  ],
+  "hero": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/5133900/19aa14ebe3720e02f7f8c720abbf9749cf36967f/header.jpg?t=1794415925",
+  "long": "Oh look, the truck is here.\nA truck delivers a fresh batch of adorable creatures straight to your factory.\nUnfortunately for them, they're also your main source of income.\n\nFirst, you need them dead.\nGrab your weapons and clear out the factory.\n\nNow turn them into something useful.\nGrab the bodies  and throw them into the crusher.\n\nGet those cans into the tube.\nYour freshly processed cans still need to be sold.\n\nReinvest in the business.\nGet stronger weapons. Upgrade your vacuum. Unlock machines. Build conveyors. Increase production. Bring in more creatures. Automate the factory.",
+  "lutris": "https://lutris.net/games/can-em-all/",
+  "name": "Can 'Em All",
+  "screenshots": [
+    "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/5133900/b07090f5637de322d25dcdb457b51b21ed15a80b/ss_b07090f5637de322d25dcdb457b51b21ed15a80b.1920x1080.jpg?t=1794415925",
+    "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/5133900/34846efbb99bedee7c905d728002482d908f2081/ss_34846efbb99bedee7c905d728002482d908f2081.1920x1080.jpg?t=1794415925",
+    "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/5133900/7b4d7c2dee36841671fe6c1af887a146792d8737/ss_7b4d7c2dee36841671fe6c1af887a146792d8737.1920x1080.jpg?t=1794415925",
+    "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/5133900/a581fbd84e0b116fe0793280a72d129148041b68/ss_a581fbd84e0b116fe0793280a72d129148041b68.1920x1080.jpg?t=1794415925",
+    "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/5133900/36b0ef9914633778d62a8dc4c9aebf7e1472b823/ss_36b0ef9914633778d62a8dc4c9aebf7e1472b823.1920x1080.jpg?t=1794415925",
+    "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/5133900/0ade82b23d5135968dd5b38a365eae2930dba2a5/ss_0ade82b23d5135968dd5b38a365eae2930dba2a5.1920x1080.jpg?t=1794415925",
+    "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/5133900/1ea43b5cac2f0aff72c91b35dadfb2975aa6511f/ss_1ea43b5cac2f0aff72c91b35dadfb2975aa6511f.1920x1080.jpg?t=1794415925",
+    "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/5133900/935a67aa36d610ef57beae9d680eaacc55ebad47/ss_935a67aa36d610ef57beae9d680eaacc55ebad47.1920x1080.jpg?t=1794415925"
+  ],
+  "short": "A juicy first-person incremental game about turning cute creatures into cans. Kill them, collect their bodies, can them, and sell them. Make money, upgrade your weapons and machines, and produce more and more.",
+  "steam_appid": 5133900,
+  "tags": [
+    "Single-player",
+    "Steam Achievements",
+    "Full controller support",
+    "DualShock Controller Support",
+    "DualShock Controller Support",
+    "DualSense Controller Support",
+    "DualSense Controller Support",
+    "Steam Cloud",
+    "Family Sharing"
+  ],
+  "year": 2026
+}
