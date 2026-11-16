@@ -157,6 +157,10 @@ A second nix store for game closures and a full store migration were both declin
 
 Queued follow-ups: the network-level gate on the mirror module and the archives relocation are host-infra arcs, sequenced after the landing pipeline.
 
+The relocation mechanism landed 2026-11-16 as `programs.strom-desktop.archivesDir` (4f1bfeb): the desktop module exports `STROM_ARCHIVES` via `mkDefault` on the same `environment.sessionVariables` channel as `STROM_STATE_HOME`, defaulting to the wrapper's own `/var/lib/steam/game-archives` so existing hosts are unchanged.
+Assigning the option is the host-side relocation step: point it at provisioned storage readable by whoever launches games; the module neither creates nor manages the directory.
+Fixture coverage rides `test/desktop-archives-env-fixture.sh` (default value, option assignment, direct operator override, disabled module).
+
 ## Verification plan
 
 A `dataArchive` game exercises the mode end to end at the existing verification ladder (static eval, boot verify, operator playthrough, save-across-relaunch), plus two mode-specific checks: a store-closure assertion that the wrapper references no archive bytes, and a re-materialization check (delete the state dir, relaunch, confirm self-heal).
