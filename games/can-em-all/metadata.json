@@ -1,0 +1,24 @@
+{
+  "android": {
+    "backend": "gamenative",
+    "gamenative": {
+      "containerConfig": {
+        "executablePath": "Can 'Em All.exe"
+      }
+    },
+    "schema": 1
+  },
+  "appid": 5133900,
+  "cids": [
+    "bafybeidi5qzg4xqucz2ra75fv44wmilp5sce47ooa75bqr4onlumccylze"
+  ],
+  "description": "Can 'Em All (LuisDev 2026 first-person incremental factory game, blast cute creatures and can them for profit, Unity 6000.2 IL2CPP via Proton)",
+  "developers": [
+    "LuisDev"
+  ],
+  "runtime": "proton",
+  "tags": [
+    "Single-player"
+  ],
+  "year": 2026
+}
