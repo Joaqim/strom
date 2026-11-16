@@ -40,6 +40,8 @@ PATCH_BRANCHES=(
     "e9ce3ee patch-bwrap-container-parent"
     "a4f35d8 patch-zombies-arent-real"
     "ccd299a patch-probably-stolen"
+    "58fc975 patch-infamous-second-son"
+    "4b23655 patch-south-of-midnight"
 )
 
 # `rad patch update` without --base re-derives the base from the default
