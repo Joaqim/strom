@@ -353,6 +353,24 @@ let
             `nix run .#<game>.no-gamescope`.
           '';
         };
+        steamBridge = mkOption {
+          type = types.bool;
+          default = false;
+          description = ''
+            Bind a host Steam install into the sandbox so the game's
+            steamclient chain talks to the real client instead of the ABI
+            stub (see pkgs/steamclient-stub). Binds `$HOME/.local/share/Steam`
+            read-only and `$HOME/.steam` read-write via bind-try, so hosts
+            without Steam fall back to the stub unchanged.
+            proton.preHook then leaves an already-present
+            `$HOME/.steam/sdk{32,64}/steamclient.so` alone instead of
+            overwriting it with the stub.
+            Needed by online-fix style activation that requires a live
+            Steam entitlement (FakeAppId Spacewar) via steamclient IPC.
+            Costs isolation: the Steam install tree becomes visible to the
+            game.
+          '';
+        };
         executable = mkOption {
           type = types.str;
           default = "";
@@ -1031,6 +1049,17 @@ let
           # tmpfs $HOME so proton.preHook can write ~/.steam/sdk{32,64}/.
           # (/sys is bound universally above for DRM/Vulkan probing.)
           bwrap.tmpfs = [ "$HOME" ];
+
+          # Real-Steam bridge (steamBridge): the sdk client dirs live under
+          # $HOME/.steam (symlinks into the Steam install) and the client's
+          # pipe state under $HOME/.steam, while every symlink target lives
+          # in the install tree. bind-try keeps Steam-less hosts on the stub.
+          bwrap.ro-bind-try = lib.mkIf cfg.steamBridge {
+            "$HOME/.local/share/Steam" = "$HOME/.local/share/Steam";
+          };
+          bwrap.bind-try = lib.mkIf cfg.steamBridge {
+            "$HOME/.steam" = "$HOME/.steam";
+          };
 
           # Extend the universal FHS with proton's graphics/audio stack
           # and turn on multilib (/usr/lib32 for 32-bit Wine).

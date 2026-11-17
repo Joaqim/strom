@@ -234,10 +234,16 @@ in
 
       # lsteamclient hardcodes $HOME/.steam/sdk{32,64}/steamclient.so
       # and asserts on dlopen failure. The stub satisfies it without
-      # a real Steam install.
+      # a real Steam install; when mk-game's steamBridge bound the host's
+      # sdk dirs in, the real client stays in place (per-side, so a
+      # 64-bit-only host install still gets the 32-bit stub).
       mkdir -p "''${HOME:-.}/.steam/sdk32" "''${HOME:-.}/.steam/sdk64"
-      ln -sf ${stub}/sdk32/steamclient.so "''${HOME:-.}/.steam/sdk32/steamclient.so"
-      ln -sf ${stub}/sdk64/steamclient.so "''${HOME:-.}/.steam/sdk64/steamclient.so"
+      if [ ! -e "''${HOME:-.}/.steam/sdk32/steamclient.so" ]; then
+        ln -sf ${stub}/sdk32/steamclient.so "''${HOME:-.}/.steam/sdk32/steamclient.so"
+      fi
+      if [ ! -e "''${HOME:-.}/.steam/sdk64/steamclient.so" ]; then
+        ln -sf ${stub}/sdk64/steamclient.so "''${HOME:-.}/.steam/sdk64/steamclient.so"
+      fi
 
       ${lib.optionalString (config.saveLocations != [ ]) ''
         # Pull each saveLocation out of the wineprefix into
