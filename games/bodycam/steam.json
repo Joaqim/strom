@@ -1,0 +1,44 @@
+{
+  "developers": [
+    "Reissad"
+  ],
+  "genres": [
+    "Action",
+    "Indie",
+    "Massively Multiplayer",
+    "Simulation",
+    "Strategy",
+    "Early Access"
+  ],
+  "hero": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2406770/b533bca55927692f0cf812ebb91c6e6e8f5cb4a6/header_alt_assets_4.jpg?t=1794683329",
+  "long": "Just Updated\n\nNew ZOMBIES\nBuilt around a mix of intense close quarters fights inside the trench network and longer range engagements across the open areas surrounding it, Trenches introduces a larger battlefield with strong contrast between confined, chaotic combat and exposed long distance sightlines.\n\nAbout the Game\n\nSEE COMBAT THROUGH THE LENS\nBodycam is the first ultra-realistic multiplayer FPS built to recreate the intensity of real combat. Experience tactical firefights through the lens of a body camera, where every angle you hold, every decision you make, and every bullet you fire can decide the outcome. Miss a check, and you pay for it. No crosshair. No ammo counter. No HUD. Countless hours were spent studying real footage, optics, camera movement, compression, exposure, sound behavior, and combat situations to push realism as far as possible.\n\nTHE TRUE FIRST-PERSON FEEL\nUnlike traditional FPS games, where the camera drives the entire experience and floating hands are simply attached to your screen, Bodycam takes a completely different approach.\n\nYour arms, torso, legs and weapon are all physically connected. On top of this, we developed our True Body technology, making every movement feel smoother, more instinctive and more natural. It takes a little time to adapt at first, but once it clicks, your weapon becomes an extension of your body and the line between you and the operator begins to disappear.\n\nOnce you've experienced combat this way, there's no going back.\n\nWEAPONS THAT FEEL REAL\nEvery reload is driven by a dynamic animation system with separate calm and stressed states. Under pressure, your character can make realistic mistakes, rush movements and struggle to complete a reload, just like a real person would. Instead of playing the same animation every time, we created dozens of unique reload variations and mistakes, making every reload feel different.\n\nADVANCED WEAPON CUSTOMIZATION\nEvery operator fights differently. Your weapon should too.\nBuild your firearm from the ground up with hundreds of attachments and billions of possible combinations. Whether you prioritize speed, stability, or precision, every attachment changes the way your weapon feels and performs, allowing you to create anything from compact CQB rifles to long-range precision platforms. You define your weapon.\n\nMODERN COMBAT TOOLS - FPV DRONE & RC CAR\nModern warfare has been transformed by FPV drones. Bodycam faithfully recreates authentic FPV piloting with realistic flight physics, Stabilized and Full Manual (Acro) flight modes, and advanced tuning options including rates, throttle curves, and flight profiles. Deploy FPV drones and reconnaissance RC vehicles to scout enemy positions, gather intelligence, strike targets, and support your squad.\n\nPHYSICS-DRIVEN COMBAT\nPowered by advanced procedural physics, Bodycam features a Ragdoll Stumbling system that lets operators naturally lose balance, stumble, recover, and react to the environment. Every movement is physically driven, making combat feel more dynamic, grounded, and unpredictable.\n\nA WORLD WITHOUT MENUS\nForget full-screen menus. Your tactical tablet is your command center. Access your loadouts, gadgets, inventory, settings, and matchmaking instantly while moving through the Bodycam Shooting Range HUB. Customize your weapons, test new builds, practice your shooting, fly FPV drones, or simply spend time with other players, all within a seamless in-game environment.\n\nBUILT FOR COMPETITION - BRING YOUR WINGMAN\nWingman is a tactical 2v2 Search & Destroy mode where communication, positioning, and precision decide every round. There are no hero abilities, no killstreaks, and no movement exploits. Victory comes from teamwork, map knowledge, and clutch plays alone.\n\nFROM TEAMWORK TO TOTAL CHAOS - CASUAL GAMEMODES\nWhether you enjoy competitive tactical gameplay or fast-paced firefights, Bodycam offers a variety of experiences. Fight for every round in 2v2 Wingman and 5v5 Body Bomb, jump into the chaos of Team Deathmatch, Deathmatch, Hardpoint, and Gun Game, or survive relentless zombie hordes in co-op.\n\nSURVIVE ZOMBIES\nFight against relentless hordes of infected in an immersive, round-based co-op Zombies mode across multiple unique maps. Manage your ammunition, explore dangerous environments, unlock new areas, restore power, and survive increasingly deadly waves as the infection spreads.\n\nGROUNDED PHOTOREALISTIC MAPS\nFight across highly detailed environments inspired by or replicated from real-world locations, from CQB buildings and forests to abandoned hospitals and trench networks.\n\nNEXT-GENERATION AUDIO\nAn advanced audio system built around realism and immersion. Real-time sound propagation, realistic reverb, occlusion, and spatial audio let you hear the battlefield as it truly unfolds, turning every sound into a tactical advantage.\n\nEARLY ACCESS, CONSTANTLY EVOLVING\nMajor updates continue to expand Bodycam with new technologies, maps, weapons, systems, and gameplay improvements shaped by community feedback.",
+  "lutris": "https://lutris.net/games/bodycam/",
+  "name": "Bodycam",
+  "screenshots": [
+    "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2406770/5689aeb849dc9ed3d9b70ad1b830d0c94c143138/ss_5689aeb849dc9ed3d9b70ad1b830d0c94c143138.1920x1080.jpg?t=1794683329",
+    "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2406770/ad5579da682b0f91c23a895b37089a24dda24258/ss_ad5579da682b0f91c23a895b37089a24dda24258.1920x1080.jpg?t=1794683329",
+    "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2406770/dcf7dfe29365b0bf8e3e30798f7c8be5ac9a3ea2/ss_dcf7dfe29365b0bf8e3e30798f7c8be5ac9a3ea2.1920x1080.jpg?t=1794683329",
+    "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2406770/9ea48df963ebc872b59a03f31336705ee8fdc145/ss_9ea48df963ebc872b59a03f31336705ee8fdc145.1920x1080.jpg?t=1794683329",
+    "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2406770/926c3c136c80c1aaafc97b68a6bad427b61e127e/ss_926c3c136c80c1aaafc97b68a6bad427b61e127e.1920x1080.jpg?t=1794683329",
+    "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2406770/ed5ec44dde87f40b2d47e21f0600a8f786db985e/ss_ed5ec44dde87f40b2d47e21f0600a8f786db985e.1920x1080.jpg?t=1794683329",
+    "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2406770/f5b1ed098468e6340b43b10ab26ceb9dfc009d5c/ss_f5b1ed098468e6340b43b10ab26ceb9dfc009d5c.1920x1080.jpg?t=1794683329",
+    "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2406770/ed5411095cc75aa0a833a5737106321afd8b4fed/ss_ed5411095cc75aa0a833a5737106321afd8b4fed.1920x1080.jpg?t=1794683329"
+  ],
+  "short": "Bodycam is the first tactical multiplayer FPS with a true body-camera view in Unreal Engine 5. Close-quarters combats feel raw and loud. Every angle, callout, and bullet matters. Play Deathmatch, Team Deathmatch, and Wingman on photoreal maps where teamplay, tactics, and clutch skill are key.",
+  "steam_appid": 2406770,
+  "tags": [
+    "Multi-player",
+    "PvP",
+    "Online PvP",
+    "Steam Achievements",
+    "Full controller support",
+    "In-App Purchases",
+    "DualSense Controller Support",
+    "Steam Input API Support",
+    "Steam Cloud",
+    "Stats",
+    "Steam Leaderboards",
+    "Family Sharing"
+  ],
+  "year": 2024
+}

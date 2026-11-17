@@ -1,0 +1,15 @@
+{
+  "android": {
+    "backend": "gamenative",
+    "gamenative": {
+      "containerConfig": {
+        "executablePath": "Bodycam.exe"
+      }
+    },
+    "schema": 1
+  },
+  "appid": 2406770,
+  "cids": [],
+  "description": "Bodycam (Reissad Studio 2024 UE5 ultra-realistic multiplayer shooter built around bodycam footage, via Proton with an online-fix Steam emulator)",
+  "runtime": "proton"
+}
