@@ -112,6 +112,12 @@ self.lib.mkGame { inherit lib pkgs; } {
 
   runtime = "proton";
 
+  # The fix's "Steamworks Fix Activation" gate demands a live Steam
+  # entitlement for FakeAppId 480 (Spacewar) over steamclient IPC; the
+  # bridge lets the game's chain reach the operator's running host
+  # Steam instead of the ABI stub.
+  steamBridge = true;
+
   # The online-fix launcher (32-bit stub reading launch_data.of to
   # start Bodycam/Binaries/Win64/Bodycam-Win64-Shipping.exe), not the
   # repack's "Run Me!.bat" recipe (that starts the shipping exe
