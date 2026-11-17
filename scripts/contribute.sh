@@ -45,6 +45,7 @@ PATCH_BRANCHES=(
     "f3e22a2 env-flag"
     "6b380d3 xorg-renames"
     "713bb2f patch-can-em-all"
+    "dcf184b patch-tape-to-tape"
 )
 
 # `rad patch update` without --base re-derives the base from the default
