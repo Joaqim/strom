@@ -1,0 +1,30 @@
+{
+  "android": {
+    "backend": "gamenative",
+    "gamenative": {
+      "containerConfig": {
+        "executablePath": "Tape to Tape.exe"
+      }
+    },
+    "schema": 1
+  },
+  "appid": 1566200,
+  "cids": [
+    "bafybeicd7llvb2znhgj7qw4qpfxgyb2oexwyiccifbfyx3zqtlffvjowty"
+  ],
+  "description": "Tape to Tape (Excellent Rectangle 2026 roguelite hockey game, build the best hockey team on a road trip of choices, synergies and bribed referees, Unity 6000.0 IL2CPP via Proton)",
+  "developers": [
+    "Excellent Rectangle"
+  ],
+  "runtime": "proton",
+  "tags": [
+    "Single-player",
+    "Multi-player",
+    "PvP",
+    "Shared/Split Screen PvP",
+    "Co-op",
+    "Shared/Split Screen Co-op",
+    "Shared/Split Screen"
+  ],
+  "year": 2026
+}

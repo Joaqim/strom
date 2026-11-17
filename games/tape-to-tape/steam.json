@@ -1,0 +1,46 @@
+{
+  "developers": [
+    "Excellent Rectangle"
+  ],
+  "genres": [
+    "Action",
+    "Sports"
+  ],
+  "hero": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1566200/8a10ac73d753b68c2ed09298ce98ee12a225fd3b/header_alt_assets_2.jpg?t=1793653053",
+  "long": "Explore a gorgeous roguelite hockey world where every choice matters on your journey to restore hockey to its former glory. Hire unique players, manage your benchwarmers, discover synergies between them, choose new abilities, bribe the referees, visit the Blademaster for upgrades and a lot more.\nCRAFT YOUR TEAM\nTake control of Angus McShaggy and lead your squad across a world filled with rival teams, strange characters and increasingly ridiculous challenges.\nHit the Training Center to boost your attributes, visit the No. 1 Fan to unlock a new player talent, or stop by the Infirmary to sacrifice a player... for the good of the team.\nBut this isn't a regular hockey season. Lose and your run is over. Start again, take a different route, build a different team using your new unlocks and discover new combinations along the way.\n\nFACE TEAMS THAT DON'T PLAY BY THE RULES\nYour opponents aren't interested in playing ordinary hockey. Take on cheating referees, farting princesses and the most sinister opponents of all: the Golfers.\nFace teams with their own players, abilities, strategies and occasionally absurd interpretations of the rules. Learn how they play, adapt your strategy and figure out how to counter their strengths before they end your run.\nMASTER EVERY SQUAD\nEach Squad introduces its own twist on the game and can completely change how you approach a run.\nBuild your roster by hiring Free Agents with the GM Squad, embrace the physical side of hockey with the Violence Squad, go back to old-school hockey physics with the Retro Squad, or forget the wrist shot entirely and blast away with the Slapshot Squad.\n\nDEEP AND REWARDING GAMEPLAY\nTape to Tape combines fast-paced arcade hockey with responsive controls, big hits, one-timers, saucer passes, desperate saves and plenty of opportunities to send your opponents flying.\nEasy to pick up but with plenty to master, the game rewards good positioning, passing, timing and learning how to take advantage of your team's strengths.\nKEY FEATURES\nA hockey roguelite campaign where every run brings a new path, opponents, events and opportunities to build your team\n\nAll the replayability and progression of a roguelite, built around fast-paced arcade hockey\n\nFace a colorful cast of unique rival teams, each with their own players, abilities and ridiculous ways of playing hockey\n\nExperience the entire campaign solo or in local couch co-op\n\nFast, responsive arcade hockey featuring big hits, one-timers, saucer passes, dekes, rebounds and desperate saves\n\nKeep coming back with persistent unlocks, including new players, abilities, Relics and Squads\n\nChallenge your friends with up to 10 local players in Play Now, Tournament, Shootout and other game modes\n\nLOCAL/STEAM REMOTE PLAY MULTIPLAYER\nNote: Tape to Tape does not feature native online multiplayer. However, you can still play with friends remotely using Steam Remote Play Together or third-party services such as Parsec.\nExperience the Roguelite Campaign at its best in co-op. Team up with friends to conquer the campaign, debate every power-up choice, and embrace the glorious chaos that makes each run unforgettable.\nYou can also jump into Play Now mode, where up to 10 players can face off locally. With a wide variety of teams, deep gameplay, and countless power-ups, every match feels chaotic, competitive, and endlessly replayable.",
+  "lutris": "https://lutris.net/games/tape-to-tape/",
+  "name": "Tape to Tape",
+  "screenshots": [
+    "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1566200/40c13543a85d9cdd3365364b0a9e979b6757903a/ss_40c13543a85d9cdd3365364b0a9e979b6757903a.1920x1080.jpg?t=1793653053",
+    "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1566200/4b2db5e6d66f649ff811d95d476e9e7456ec35de/ss_4b2db5e6d66f649ff811d95d476e9e7456ec35de.1920x1080.jpg?t=1793653053",
+    "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1566200/74960a2d3af8df7738cc2eec0b000ff5b04d7735/ss_74960a2d3af8df7738cc2eec0b000ff5b04d7735.1920x1080.jpg?t=1793653053",
+    "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1566200/3c8cae0f2eccd8e27601a7f19ec12482b5aaf175/ss_3c8cae0f2eccd8e27601a7f19ec12482b5aaf175.1920x1080.jpg?t=1793653053",
+    "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1566200/0c421e3dcf5c70af905117ad84126b1c48a8fc55/ss_0c421e3dcf5c70af905117ad84126b1c48a8fc55.1920x1080.jpg?t=1793653053",
+    "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1566200/31d027ad86d15351aeab9fa918d2cfbed36a39a1/ss_31d027ad86d15351aeab9fa918d2cfbed36a39a1.1920x1080.jpg?t=1793653053",
+    "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1566200/6f1d151050800f6ebf3ab47bb708f1c82b2dfcd3/ss_6f1d151050800f6ebf3ab47bb708f1c82b2dfcd3.1920x1080.jpg?t=1793653053",
+    "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1566200/e834224694365adf4ef6a80224d48ffe63128be8/ss_e834224694365adf4ef6a80224d48ffe63128be8.1920x1080.jpg?t=1793653053"
+  ],
+  "short": "Tape to Tape is a roguelite hockey game where every choice matters on your journey to build the best hockey team. Choose your path, hire unique players, discover synergies between them, pick unique abilities, bribe the referees or visit the Blademaster on your way to restore hockey's former glory.",
+  "steam_appid": 1566200,
+  "tags": [
+    "Single-player",
+    "Multi-player",
+    "PvP",
+    "Shared/Split Screen PvP",
+    "Co-op",
+    "Shared/Split Screen Co-op",
+    "Shared/Split Screen",
+    "Steam Achievements",
+    "Full controller support",
+    "Gamepad Recommended",
+    "DualShock Controller Support",
+    "DualShock Controller Support",
+    "DualSense Controller Support",
+    "DualSense Controller Support",
+    "Steam Cloud",
+    "Remote Play on TV",
+    "Remote Play Together",
+    "Family Sharing"
+  ],
+  "year": 2026
+}
