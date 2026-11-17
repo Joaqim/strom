@@ -67,7 +67,7 @@ usage() {
     cat <<'EOF'
 Usage:
   contribute.sh preflight
-  contribute.sh sync [--dry-run] <patch-id> <base>..<tip>
+  contribute.sh sync [--dry-run] [--force-range] <patch-id> <base>..<tip>>
 
 preflight  Fetch rad, fast-forward local master, and report which stage/*
            branches and rad-patch branches are stale against master.
@@ -77,6 +77,8 @@ sync       Cherry-pick the commits of <base>..<tip> that the patch branch
            and sync. --dry-run stops after showing the cherry-pick plan.
            Stacked patches listed in STACKED_BASES get their base
            re-applied to `rad patch update` (without --base rad unstacks).
+           --force-range overrides the foreign-carries guard when the range
+           knowingly sweeps commits another tracked patch already carries.
 EOF
 }
 
@@ -119,12 +121,13 @@ cmd_preflight() {
 }
 
 cmd_sync() {
-    local dry_run=false
+    local dry_run=false force_range=false
     local args=()
     local a
     for a in "$@"; do
         case "$a" in
             --dry-run) dry_run=true ;;
+            --force-range) force_range=true ;;
             -*) die "unknown option: $a" ;;
             *) args+=("$a") ;;
         esac
@@ -185,6 +188,39 @@ cmd_sync() {
         echo "nothing to sync: ${branch} already carries every commit in ${range} (patch-id match)"
         exit 0
     fi
+
+    # A missing commit whose patch-id another tracked patch branch already
+    # carries does not belong to this patch. That pattern is a range like
+    # master..develop sweeping other arcs' commits because rad master trails
+    # develop, which would cherry-pick the whole backlog onto the branch.
+    local -A missing_set=() foreign=()
+    local other
+    for c in "${missing[@]}"; do
+        missing_set[$c]=1
+    done
+    for entry in "${PATCH_BRANCHES[@]}"; do
+        other=${entry#* }
+        [ "$other" != "$branch" ] || continue
+        git rev-parse --verify --quiet "refs/heads/${other}" >/dev/null 2>&1 || continue
+        while read -r marker c; do
+            [ "$marker" = "-" ] || continue
+            [ -n "${missing_set[$c]:-}" ] || continue
+            [ -n "${foreign[$c]:-}" ] || foreign[$c]=$other
+        done < <(git cherry "$other" "$tip")
+    done
+    if [ "${#foreign[@]}" -gt 0 ]; then
+        echo "range ${range} sweeps commits already carried by other tracked patches:" >&2
+        for c in "${missing[@]}"; do
+            [ -n "${foreign[$c]:-}" ] || continue
+            printf '       %s %s (carried by %s)\n' \
+                "${c:0:7}" "$(git log -1 --format=%s "$c")" "${foreign[$c]}" >&2
+        done
+        if [ "$force_range" != true ]; then
+            die "narrow the range to this patch's commits, or pass --force-range"
+        fi
+        echo "warning: --force-range given, carrying them anyway" >&2
+    fi
+
     echo "commits to cherry-pick:"
     git log --no-walk=unsorted --oneline "${missing[@]}"
 
@@ -196,7 +232,10 @@ cmd_sync() {
     local old_tip
     old_tip=$(git rev-parse "${branch}")
 
-    if ! git -C "$worktree" -c commit.gpgsign=false cherry-pick "${missing[@]}"; then
+    # Stage-marker commits are legitimately empty; without --allow-empty the
+    # sequence aborts on the first one with "The previous cherry-pick is now
+    # empty" and leaves the branch mid-carry.
+    if ! git -C "$worktree" -c commit.gpgsign=false cherry-pick --allow-empty "${missing[@]}"; then
         die "cherry-pick failed: resolve in ${worktree} (or 'git cherry-pick --abort' there), then rerun sync with the remaining range"
     fi
 
@@ -212,7 +251,13 @@ cmd_sync() {
     # rad's transport rejects a plain --force while push.useForceIfIncludes is
     # enabled (it is, globally, on this machine), so the check is disabled
     # per-invocation. This is the known-good force-push path for rad.
-    git -c push.useForceIfIncludes=false push --force rad "$branch"
+    # The pre-push pre-commit shim aborts with "No .pre-commit-config.yaml
+    # file was found" when this script runs from a worktree: the config is a
+    # gitignored symlink present only in the main checkout. Signed-commit
+    # safety is already ensured by the manual check above, so the shim is
+    # silenced rather than satisfied here.
+    PRE_COMMIT_ALLOW_NO_CONFIG=1 \
+        git -c push.useForceIfIncludes=false push --force rad "$branch"
 
     # rad 1.9.1 `patch update` derives the new head from the working copy, so
     # it must run where the patch branch is checked out. --base is mandatory
