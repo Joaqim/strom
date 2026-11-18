@@ -46,6 +46,7 @@ PATCH_BRANCHES=(
     "6b380d3 xorg-renames"
     "713bb2f patch-can-em-all"
     "dcf184b patch-tape-to-tape"
+    "94970c0 patch-bodycam"
 )
 
 # `rad patch update` without --base re-derives the base from the default
