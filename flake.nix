@@ -77,6 +77,14 @@
                   pkgs = nixpkgs.legacyPackages.x86_64-linux;
                 };
               };
+          # Same shape, against a real recipe: drives bodycam through the
+          # launcher's `.apply` path and asserts the onlineFix row and its
+          # conditioning (evaluation only; no FOD, no wrapper build).
+          x86_64-linux.bodycam-onlinefix =
+            nixpkgs.legacyPackages.x86_64-linux.callPackage ./test/bodycam-onlinefix.nix
+              {
+                game = self.modules.x86_64-linux.bodycam;
+              };
         };
 
       devShells = forAllSystems (
