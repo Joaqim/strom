@@ -1,0 +1,17 @@
+{
+  "android": {
+    "backend": "gamenative",
+    "gamenative": {
+      "containerConfig": {
+        "executablePath": "Bodycam/Binaries/Win64/Bodycam-Win64-Shipping.exe"
+      }
+    },
+    "schema": 1
+  },
+  "appid": 2406770,
+  "cids": [
+    "bafybeih2fltvaazjpfz4ux3fdo2jss7gkvp5uprbdwd5pwcp5hf4tcqc3a"
+  ],
+  "description": "Bodycam (Reissad Studio 2024 UE5 ultra-realistic multiplayer shooter built around bodycam footage, Windows build via Proton; single-player on the repack's Goldberg emu)",
+  "runtime": "proton"
+}
