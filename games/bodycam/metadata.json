@@ -3,7 +3,7 @@
     "backend": "gamenative",
     "gamenative": {
       "containerConfig": {
-        "executablePath": "Bodycam.exe"
+        "executablePath": "Bodycam/Binaries/Win64/Bodycam-Win64-Shipping.exe"
       }
     },
     "schema": 1,

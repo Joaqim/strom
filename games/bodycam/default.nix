@@ -24,7 +24,8 @@
 # folder beside root-level site debris. The game root Bodycam/ holds
 # the nested project dir Bodycam/Bodycam/ (Binaries/Win64/
 # Bodycam-Win64-Shipping.exe, 180,773,376 bytes) plus Engine/, the
-# 3.9 MB UE bootstrapper Bodycam.exe and _CommonRedist/. The curated
+# 3.9 MB Easy Anti-Cheat Bootstrapper v1.9.0 (EOS flavour)
+# Bodycam.exe and _CommonRedist/. The curated
 # zip of the drop minus exactly three exclusions ("AnkerGames - Free
 # Pre-installed PC Games.url", "Read Me.txt", "Run Me!.bat") is the
 # canonical artifact: 67,632,978,155 bytes, sha256
@@ -52,7 +53,7 @@
 # reads "Bodycam\Binaries\Win64\Bodycam-Win64-Shipping.exe", a path
 # from that root; the fix's steam_api64.dll, 319,584 B, is
 # byte-identical to the repack's .bak original it restores, and its
-# Bodycam.of, 3,946,736 B, is byte-identical to the base's
+# Bodycam.of, 3,946,736 B, is byte-identical to the base's EAC
 # bootstrapper it displaces; the fix's
 # EOSSDK-Win64-Shipping.of, 18,266,584 B, is the same size as the
 # base's EOSSDK .bak but not byte-identical -- two different EOSSDK
@@ -72,10 +73,15 @@
 # the one game-byte exception inside an otherwise free-software
 # closure). This consumption form is fork-develop-local and is never
 # cherry-picked upstream. Operator playthrough 2026-11-17/18:
-# single-player confirmed on both paths (the repack's in-tree
-# Goldberg emu without the fix, and the fix overlay active); online
-# lobbies join but freeze at server connect (open issue). The fix is
-# opt-in, default off.
+# single-player confirmed with the fix overlay active; online
+# lobbies join but freeze at server connect (open issue). First
+# plain-variant launch 2026-11-18: the base root Bodycam.exe is the
+# EAC Bootstrapper, which showed its splash, downloaded the linux64
+# EAC module, and the shipping exe crashed at t=0 (UECC
+# CrashContext, AV read 0x8 on GameThread). EAC is bypassed by
+# entrypoint choice on both paths: the fix launcher shadows the
+# bootstrapper in the overlay, and the plain path execs the shipping
+# exe directly. The fix is opt-in, default off.
 let
   fix = fetchIpfs {
     cid = "bafybeigldtgjgzu263k2enqz46kzyy4sxtnna3z74j2scdgb5m5tmw6aeq";
@@ -115,11 +121,11 @@ self.lib.mkGame { inherit lib pkgs; } {
             also surfaces on Android, where the fix is untested.
 
             Everything the fix needs switches on together: the overlay
-            lower above the materialized base, the steamclient bridge, and
-            the SteamAppId/SteamGameId/WINEDLLOVERRIDES env. Single-player
-            runs on either path: Bodycam.exe resolves to the base
-            bootstrapper (Goldberg) without the overlay and to the fix
-            launcher with it.
+            lower above the materialized base, the steamclient bridge,
+            the SteamAppId/SteamGameId/WINEDLLOVERRIDES env, and the
+            entrypoint (the fix's Bodycam.exe launcher). Without it the
+            wrapper execs the shipping exe directly, bypassing the EAC
+            bootstrapper the base tree keeps at Bodycam.exe.
           '';
         };
 
@@ -150,6 +156,16 @@ self.lib.mkGame { inherit lib pkgs; } {
             SteamGameId = "2406770";
             WINEDLLOVERRIDES = "winmm=n,b";
           };
+
+          # EAC bypass by entrypoint choice (see the provenance
+          # comment): the base root Bodycam.exe is the EAC Bootstrapper,
+          # so the plain path goes straight to the shipping exe -- also
+          # the target the fix's own launch_data.of names -- and the fix
+          # path runs Bodycam.exe, which the overlay has replaced with
+          # the fix's launcher. Not the repack's "Run Me!.bat" recipe,
+          # which starts the shipping exe bare, bypassing the fix.
+          executable =
+            if config.onlineFix then "Bodycam.exe" else "Bodycam/Binaries/Win64/Bodycam-Win64-Shipping.exe";
         };
       }
     )
@@ -166,14 +182,6 @@ self.lib.mkGame { inherit lib pkgs; } {
   };
 
   runtime = "proton";
-
-  # Both launch paths live at this root path: the fix's 32-bit stub
-  # launcher (reading launch_data.of to start Bodycam/Binaries/Win64/
-  # Bodycam-Win64-Shipping.exe) when the onlineFix overlay is
-  # mounted, the repack's own 3.9 MB UE bootstrapper (Goldberg
-  # single-player) without it. Not the repack's "Run Me!.bat" recipe,
-  # which starts the shipping exe bare, bypassing the fix.
-  executable = "Bodycam.exe";
 
   # UE5 writes saves and settings under %LOCALAPPDATA%\Bodycam\Saved
   # (drive_c/users/steamuser/AppData/Local/Bodycam/Saved); relocate

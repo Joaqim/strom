@@ -10,10 +10,13 @@
 #      launcher manifest) carries one bool row keyed `onlineFix`,
 #      shipped default false.
 #   2. Off (the default): the overlay holds only the materialized
-#      dataArchive base lower, no steamBridge bwrap binds, no emu env.
+#      dataArchive base lower, no steamBridge bwrap binds, no emu env,
+#      and the entrypoint is the shipping exe directly (bypassing the
+#      EAC bootstrapper the base tree keeps at Bodycam.exe).
 #   3. On: the fix tree rides as the first overlay lower above the
-#      base, the Steam install binds appear, and the three env vars
-#      are set.
+#      base, the Steam install binds appear, the three env vars are
+#      set, and the entrypoint is Bodycam.exe -- the fix launcher
+#      through the overlay.
 #
 # Evaluation only: nothing here builds the fix FOD or a wrapper, so the
 # check itself can never fetch game bytes.
@@ -28,6 +31,7 @@ let
   baseLower = "$STROM_GAMEDIR/.strom-data/5606be923449";
   lowersOff = game.bwrap.overlay.lowers;
   lowersOn = on.bwrap.overlay.lowers;
+  shippingExe = "Bodycam/Binaries/Win64/Bodycam-Win64-Shipping.exe";
 in
 lib.throwIfNot (builtins.length rows == 1)
   "bodycam-onlinefix: settingsSchema has ${toString (builtins.length rows)} onlineFix rows, expected exactly 1"
@@ -75,10 +79,19 @@ lib.throwIfNot (builtins.length rows == 1)
                                 )
                                 "bodycam-onlinefix: onlineFix on must set SteamAppId/SteamGameId/WINEDLLOVERRIDES"
                                 (
-                                  pkgs.runCommand "bodycam-onlinefix-check" { } ''
-                                    echo "bodycam-onlinefix: schema row published; overlay, steamBridge and env all switch with onlineFix" >&2
-                                    touch "$out"
-                                  ''
+                                  lib.throwIfNot
+                                    (game.executable == shippingExe && game.proton.exe == "$STROM_OVERLAY/${shippingExe}")
+                                    "bodycam-onlinefix: onlineFix off must exec the shipping exe ${shippingExe} directly, not the base Bodycam.exe (the EAC bootstrapper)"
+                                    (
+                                      lib.throwIfNot (on.executable == "Bodycam.exe" && on.proton.exe == "$STROM_OVERLAY/Bodycam.exe")
+                                        "bodycam-onlinefix: onlineFix on must exec Bodycam.exe (the fix launcher through the overlay)"
+                                        (
+                                          pkgs.runCommand "bodycam-onlinefix-check" { } ''
+                                            echo "bodycam-onlinefix: schema row published; overlay, steamBridge, env and entrypoint all switch with onlineFix" >&2
+                                            touch "$out"
+                                          ''
+                                        )
+                                    )
                                 )
                             )
                           )
