@@ -68,12 +68,14 @@
 # derivation; the wrapper materializes it into the state dir at
 # launch from the operator's static archive directory or the local
 # kubo gateway (see lib/data-materializer.sh). The online-fix overlay
-# rides above it as an unconditional overlay lower (the mk-game
-# recipe mechanism, lib.mkBefore on bwrap.overlay.lowers): a 28 MiB
-# store tree is the one game-byte exception inside an otherwise
-# free-software closure. This consumption form is fork-develop-local
-# and is never cherry-picked upstream. Multiplayer-only title: the
-# online-fix emu path is unverified until the operator playthrough.
+# rides above it as the `onlineFix` mod layer (a 28 MiB store tree,
+# the one game-byte exception inside an otherwise free-software
+# closure). This consumption form is fork-develop-local and is never
+# cherry-picked upstream. Operator playthrough 2026-11-17/18:
+# single-player confirmed on both paths (the repack's in-tree
+# Goldberg emu without the fix, and the fix overlay active); online
+# lobbies join but freeze at server connect (open issue). The fix is
+# opt-in, default off.
 let
   fix = fetchIpfs {
     cid = "bafybeigldtgjgzu263k2enqz46kzyy4sxtnna3z74j2scdgb5m5tmw6aeq";
@@ -94,6 +96,65 @@ let
   '';
 in
 self.lib.mkGame { inherit lib pkgs; } {
+  imports = [
+    (
+      { config, lib, ... }:
+      let
+        inherit (lib) mkOption types;
+      in
+      {
+        options.onlineFix = mkOption {
+          type = types.bool;
+          default = false;
+          description = ''
+            Experimental online-multiplayer path: replaces the repack's
+            Goldberg single-player emu with the online-fix stack and bridges
+            the host Steam client for its activation. Requires the host
+            Steam client running with Spacewar (appid 480) installed; a
+            join freeze at server connect is a known open issue. The row
+            also surfaces on Android, where the fix is untested.
+
+            Everything the fix needs switches on together: the overlay
+            lower above the materialized base, the steamclient bridge, and
+            the SteamAppId/SteamGameId/WINEDLLOVERRIDES env. Single-player
+            runs on either path: Bodycam.exe resolves to the base
+            bootstrapper (Goldberg) without the overlay and to the fix
+            launcher with it.
+          '';
+        };
+
+        config = {
+          # The fix overlay above the materialized base (see the
+          # provenance comment: replaces the repack's Goldberg dll with
+          # the original, adds the OnlineFix winmm proxy next to the
+          # shipping exe, swaps EOSSDK, installs the fix launcher).
+          modLayers = lib.optional config.onlineFix {
+            key = "onlineFix";
+            value = "true";
+            tree = fixTree;
+          };
+
+          # The fix's "Steamworks Fix Activation" gate demands a live
+          # Steam entitlement for FakeAppId 480 (Spacewar) over
+          # steamclient IPC; the bridge lets the game's chain reach the
+          # operator's running host Steam instead of the ABI stub.
+          steamBridge = config.onlineFix;
+
+          # RealAppId from OnlineFix.ini; the emu spoofs the interface,
+          # the env keeps proton's own app-id view coherent with it.
+          # winmm=n,b forces wine to load the fix's native winmm.dll
+          # proxy ahead of its builtin (the ROUNDS winhttp=n,b precedent
+          # for proxy dlls).
+          env = lib.mkIf config.onlineFix {
+            SteamAppId = "2406770";
+            SteamGameId = "2406770";
+            WINEDLLOVERRIDES = "winmm=n,b";
+          };
+        };
+      }
+    )
+  ];
+
   name = "bodycam";
 
   dataArchive = {
@@ -104,24 +165,14 @@ self.lib.mkGame { inherit lib pkgs; } {
     rootFolder = "Bodycam";
   };
 
-  # Unconditional fix overlay above the materialized base (see the
-  # provenance comment: replaces the repack's Goldberg dll with the
-  # original, adds the OnlineFix winmm proxy next to the shipping
-  # exe, swaps EOSSDK, installs the fix launcher).
-  bwrap.overlay.lowers = lib.mkBefore [ "${fixTree}" ];
-
   runtime = "proton";
 
-  # The fix's "Steamworks Fix Activation" gate demands a live Steam
-  # entitlement for FakeAppId 480 (Spacewar) over steamclient IPC; the
-  # bridge lets the game's chain reach the operator's running host
-  # Steam instead of the ABI stub.
-  steamBridge = true;
-
-  # The online-fix launcher (32-bit stub reading launch_data.of to
-  # start Bodycam/Binaries/Win64/Bodycam-Win64-Shipping.exe), not the
-  # repack's "Run Me!.bat" recipe (that starts the shipping exe
-  # bare, bypassing the fix).
+  # Both launch paths live at this root path: the fix's 32-bit stub
+  # launcher (reading launch_data.of to start Bodycam/Binaries/Win64/
+  # Bodycam-Win64-Shipping.exe) when the onlineFix overlay is
+  # mounted, the repack's own 3.9 MB UE bootstrapper (Goldberg
+  # single-player) without it. Not the repack's "Run Me!.bat" recipe,
+  # which starts the shipping exe bare, bypassing the fix.
   executable = "Bodycam.exe";
 
   # UE5 writes saves and settings under %LOCALAPPDATA%\Bodycam\Saved
@@ -130,16 +181,6 @@ self.lib.mkGame { inherit lib pkgs; } {
   # further engine paths (EOS/EAC user state) get discovered by the
   # runtime ladder's find -newer sweep and appended here.
   saveLocations = [ "AppData/Local/Bodycam/Saved" ];
-
-  # RealAppId from OnlineFix.ini; the emu spoofs the interface, the
-  # env keeps proton's own app-id view coherent with it. winmm=n,b
-  # forces wine to load the fix's native winmm.dll proxy ahead of its
-  # builtin (the ROUNDS winhttp=n,b precedent for proxy dlls).
-  env = {
-    SteamAppId = "2406770";
-    SteamGameId = "2406770";
-    WINEDLLOVERRIDES = "winmm=n,b";
-  };
 
   gamescope = {
     output-width = 1920;
@@ -153,7 +194,7 @@ self.lib.mkGame { inherit lib pkgs; } {
   };
 
   meta = {
-    description = "Bodycam (Reissad Studio 2024 UE5 ultra-realistic multiplayer shooter built around bodycam footage, via Proton with an online-fix Steam emulator)";
+    description = "Bodycam (Reissad Studio 2024 UE5 ultra-realistic multiplayer shooter built around bodycam footage, via Proton; single-player on the repack's Goldberg emu, experimental online fix opt-in)";
     platforms = [ "x86_64-linux" ];
     mainProgram = "bodycam";
   };

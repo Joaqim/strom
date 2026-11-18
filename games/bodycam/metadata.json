@@ -6,10 +6,19 @@
         "executablePath": "Bodycam.exe"
       }
     },
-    "schema": 1
+    "schema": 1,
+    "settings": [
+      {
+        "default": false,
+        "help": "Experimental online-multiplayer path: replaces the repack's Goldberg single-player emu with the online-fix stack and bridges the host Steam client for its activation. Requires the host Steam client running with Spacewar (appid 480) installed; a join freeze at server connect is a known open issue. The row also surfaces on Android, where the fix is untested.",
+        "key": "onlineFix",
+        "kind": "bool",
+        "label": "Online fix"
+      }
+    ]
   },
   "appid": 2406770,
   "cids": [],
-  "description": "Bodycam (Reissad Studio 2024 UE5 ultra-realistic multiplayer shooter built around bodycam footage, via Proton with an online-fix Steam emulator)",
+  "description": "Bodycam (Reissad Studio 2024 UE5 ultra-realistic multiplayer shooter built around bodycam footage, via Proton; single-player on the repack's Goldberg emu, experimental online fix opt-in)",
   "runtime": "proton"
 }
