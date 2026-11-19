@@ -1,6 +1,7 @@
 # strom-bundle: turn a game's tree into its pinned bundle.
 #
 #   nix run .#bundle -- <slug> <pin-url> [<dir>]
+#   nix run .#bundle -- <slug> --local   [<dir>]
 #
 # Packs a game directory as ONE reproducible tar.zst, uploads it to the
 # pin endpoint (the anonymous tar-upload service: POST a tar, get the
@@ -49,6 +50,16 @@
 #
 # No pin host is named here on purpose: pass it, like STROM_IPFS_GATEWAYS
 # on the fetch side keeps private infrastructure out of the repo.
+#
+# The local mode (`--local` in place of the pin URL) pins the tar.zst on
+# a kubo the operator controls and sends nothing off the machine: the
+# add command comes from STROM_IPFS_ADD (space-separated, no shell
+# quoting; default `ipfs add`), so the sudo form a host needs lives in
+# its gitignored env the same way STROM_IPFS_GATEWAYS keeps gateways
+# out. The tar.zst is piped to that command on stdin, and the CID the
+# daemon answers with must repeat the one computed here or the run
+# fails; `ipfs add` pins recursively by default, and the advisory
+# gateway check reuses the first STROM_IPFS_GATEWAYS entry when set.
 { pkgs }:
 
 pkgs.writeShellApplication {
@@ -64,11 +75,16 @@ pkgs.writeShellApplication {
   ];
   text = ''
         if [[ $# -lt 2 || $# -gt 3 ]]; then
-          echo "usage: strom-bundle <slug> <pin-url> [<dir>]" >&2
+          echo "usage: strom-bundle <slug> <pin-url|--local> [<dir>]" >&2
           exit 1
         fi
         slug=$1
-        pin=''${2%/}
+        local_mode=0
+        if [[ $2 == --local ]]; then
+          local_mode=1
+        else
+          pin=''${2%/}
+        fi
         flake=''${STROM_FLAKE:-.}
 
         if [[ $# -eq 3 ]]; then
@@ -122,19 +138,38 @@ pkgs.writeShellApplication {
         cid=$(ipfs add -Q --only-hash --cid-version=1 "$out")
         echo "[bundle] $size bytes, $hash, $cid" >&2
 
-        echo "[bundle] uploading to $pin/" >&2
-        reply=$(tar -c -C "$work" "$slug.tar.zst" \
-          | curl -sS --fail-with-body --max-time 7200 --data-binary @- "$pin/")
-        root=$(jq -r .cid <<<"$reply")
-        echo "[bundle] pinned; GC root (directory) $root" >&2
-
-        # The endpoint's gateway, when it has one at the same host: a quick
-        # sanity check that the file CID resolves. Advisory only; the fetch
-        # side races the public pool as well.
-        if curl -fsSI --max-time 60 "$pin/ipfs/$cid?filename=x.bin&download=true" >/dev/null 2>&1; then
-          echo "[bundle] $pin/ipfs/$cid serves the bundle" >&2
+        if (( local_mode )); then
+          read -r -a addcmd <<< "''${STROM_IPFS_ADD:-ipfs add}"
+          echo "[bundle] pinning via ''${STROM_IPFS_ADD:-ipfs add}" >&2
+          pinned=$("''${addcmd[@]}" -Q --cid-version=1 < "$out") || exit 1
+          if [[ $pinned != "$cid" ]]; then
+            echo "bundle: daemon answered CID $pinned, expected $cid" >&2
+            exit 1
+          fi
+          echo "[bundle] pinned locally: $cid" >&2
+          gw="''${STROM_IPFS_GATEWAYS%%[, ]*}"
+          gw="''${gw%/}"
         else
-          echo "[bundle] note: $pin/ipfs/$cid did not answer a HEAD; not necessarily a problem" >&2
+          echo "[bundle] uploading to $pin/" >&2
+          reply=$(tar -c -C "$work" "$slug.tar.zst" \
+            | curl -sS --fail-with-body --max-time 7200 --data-binary @- "$pin/")
+          root=$(jq -r .cid <<<"$reply")
+          echo "[bundle] pinned; GC root (directory) $root" >&2
+          gw=$pin
+        fi
+
+        # A quick sanity check that the file CID resolves over HTTP: the
+        # endpoint's own gateway in upload mode, the operator's first
+        # STROM_IPFS_GATEWAYS entry in local mode. Advisory only; the
+        # fetch side races the wider pool as well.
+        if [[ -n $gw ]]; then
+          if curl -fsSI --max-time 60 "$gw/ipfs/$cid?filename=x.bin&download=true" >/dev/null 2>&1; then
+            echo "[bundle] $gw/ipfs/$cid serves the bundle" >&2
+          else
+            echo "[bundle] note: $gw/ipfs/$cid did not answer a HEAD; not necessarily a problem" >&2
+          fi
+        else
+          echo "[bundle] note: STROM_IPFS_GATEWAYS unset; skipping the gateway check" >&2
         fi
 
         cat <<EOF
