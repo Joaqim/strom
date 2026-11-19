@@ -1,0 +1,24 @@
+{
+  "android": {
+    "backend": "gamenative",
+    "gamenative": {
+      "containerConfig": {
+        "executablePath": "Thank Goodness You're Here!.exe"
+      }
+    },
+    "schema": 1
+  },
+  "appid": 2366980,
+  "cids": [
+    "bafybeieo6ycvsbsmypmhdy7fvx2kexvktfl3zh4aepst2obhzocgr5f7oq"
+  ],
+  "description": "Thank Goodness You're Here! (Coal Supper 2024 absurd comedy adventure, wander the oddball northern English town of Barnsworth doing odd jobs, 32-bit Unity 2021.3 IL2CPP via Proton)",
+  "developers": [
+    "Coal Supper"
+  ],
+  "runtime": "proton",
+  "tags": [
+    "Single-player"
+  ],
+  "year": 2024
+}

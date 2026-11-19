@@ -1,0 +1,38 @@
+{
+  "developers": [
+    "Coal Supper"
+  ],
+  "genres": [
+    "Adventure",
+    "Casual",
+    "Indie"
+  ],
+  "hero": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2366980/header.jpg?t=1733154706",
+  "long": "",
+  "lutris": "https://lutris.net/games/thank-goodness-youre-here/",
+  "name": "Thank Goodness You're Here!",
+  "screenshots": [
+    "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2366980/ss_928c3226d2a3723e29e63cc19c13f47bd88faa86.1920x1080.jpg?t=1733154706",
+    "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2366980/ss_c624fda9191859781cf9b34a6563c1953d977800.1920x1080.jpg?t=1733154706",
+    "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2366980/ss_179e32f0cddfa678a826750968325810bf83e6b3.1920x1080.jpg?t=1733154706",
+    "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2366980/ss_dfd24b8c643032dea42919d1584b94f100dccd2b.1920x1080.jpg?t=1733154706",
+    "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2366980/ss_d9dc1ea31fae0bbe198885ef23ed9a6348190a5f.1920x1080.jpg?t=1733154706",
+    "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2366980/ss_21e18c4d8f5e892281a5f6877abb878812379141.1920x1080.jpg?t=1733154706",
+    "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2366980/ss_e421026db9d4c7243bd50a10286dd91fbe73b66c.1920x1080.jpg?t=1733154706",
+    "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2366980/ss_5b30e20935577fce25ecbbc5de88de4e90360ba1.1920x1080.jpg?t=1733154706"
+  ],
+  "short": "Thank Goodness You're Here! is an absurd comedy slapformer set in the bizarre Northern English town of Barnsworth. As a traveling salesman, take the time to see the sights and meet the locals, who are very eager to give you a series of increasingly odd jobs\u2026",
+  "steam_appid": 2366980,
+  "tags": [
+    "Single-player",
+    "Steam Achievements",
+    "Full controller support",
+    "Gamepad Recommended",
+    "DualShock Controller Support",
+    "DualShock Controller Support",
+    "DualSense Controller Support",
+    "DualSense Controller Support",
+    "Family Sharing"
+  ],
+  "year": 2024
+}
