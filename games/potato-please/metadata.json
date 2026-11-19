@@ -1,0 +1,24 @@
+{
+  "android": {
+    "backend": "gamenative",
+    "gamenative": {
+      "containerConfig": {
+        "executablePath": "PotatoPlease.exe"
+      }
+    },
+    "schema": 1
+  },
+  "appid": 5266240,
+  "cids": [
+    "bafybeih7abvspmhj7tkbtw5dxo7tbw4f4ityrao5ihnc4giwmb2iezw5pm"
+  ],
+  "description": "Potato Please (Golden Horn Studios 2026 first-person potato-peeling game, peel a mountain of potatoes with real physics, cut thin and waste nothing, Unity 6000.3 IL2CPP via Proton)",
+  "developers": [
+    "Golden Horn Studios"
+  ],
+  "runtime": "proton",
+  "tags": [
+    "Single-player"
+  ],
+  "year": 2026
+}

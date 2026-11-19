@@ -1,0 +1,41 @@
+{
+  "developers": [
+    " Golden Horn Studios"
+  ],
+  "genres": [
+    "Casual",
+    "Indie",
+    "Simulation"
+  ],
+  "hero": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/5266240/e289442aa6b3756109bc65b427556ea538efb849/header.jpg?t=1794904443",
+  "long": "Congratulations, Comrade. The nation has entrusted you with a vital responsibility: keeping the army fed. Peel the potatoes, prepare the supply, and improve your operation in service of the greater good. Work hard, work efficiently, and remember: the army is hungry.\nPEEL THE POTATOES\nYour job is simple: peel the potatoes and get them into the water.\nPick them up, peel them by hand, and toss them in one by one.\nFINISH THE PILE\nClear the pile and find faster ways to get the job done.\nWhat starts as manual work gradually turns into a much more efficient operation.\nAUTOMATE THE PROCESS\nTurn repetitive work into a system.\nCollect potatoes in bulk, use machines to process them, and automate more of the job as your operation grows.",
+  "lutris": "https://lutris.net/games/potato-please/",
+  "name": "Potato Please",
+  "screenshots": [
+    "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/5266240/e570cff7a205de985b4cf4be1227a844daeba913/ss_e570cff7a205de985b4cf4be1227a844daeba913.1920x1080.jpg?t=1794904443",
+    "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/5266240/ba165529f1e1e51617e4f7d77e4002848dd16cb0/ss_ba165529f1e1e51617e4f7d77e4002848dd16cb0.1920x1080.jpg?t=1794904443",
+    "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/5266240/8092eb01f00c8904619d69b36b410e62a99a464d/ss_8092eb01f00c8904619d69b36b410e62a99a464d.1920x1080.jpg?t=1794904443",
+    "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/5266240/417c17c016cfdf5d4485657ace9710e4cff7a0b7/ss_417c17c016cfdf5d4485657ace9710e4cff7a0b7.1920x1080.jpg?t=1794904443",
+    "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/5266240/013c1d7c7004ea8b36c9c2a0492da94b08c9c905/ss_013c1d7c7004ea8b36c9c2a0492da94b08c9c905.1920x1080.jpg?t=1794904443",
+    "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/5266240/3aa9e252dfe9d158b3da053778a2f9edb75089a2/ss_3aa9e252dfe9d158b3da053778a2f9edb75089a2.1920x1080.jpg?t=1794904443",
+    "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/5266240/b5511e1ecb02336e76ede068aa02c448bbf82018/ss_b5511e1ecb02336e76ede068aa02c448bbf82018.1920x1080.jpg?t=1794904443",
+    "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/5266240/1c79f81ab395aad126a73769fc9ae4c99b67f731/ss_1c79f81ab395aad126a73769fc9ae4c99b67f731.1920x1080.jpg?t=1794904443"
+  ],
+  "short": "A first-person potato peeling game. You have a knife. You have a bucket. You have a mountain of potatoes. Peel them with real physics. Cut thin, waste nothing. Buy better tools. Finish the pile.",
+  "steam_appid": 5266240,
+  "tags": [
+    "Single-player",
+    "Steam Achievements",
+    "Full controller support",
+    "Camera Comfort",
+    "Custom Volume Controls",
+    "#category_playable_at_your_own_pace",
+    "Playable without Timed Input",
+    "Save Anytime",
+    "Steam Input API Support",
+    "Stereo Sound",
+    "Steam Cloud",
+    "Family Sharing"
+  ],
+  "year": 2026
+}
