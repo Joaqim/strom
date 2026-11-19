@@ -58,18 +58,19 @@
     {
       formatter = forAllSystems (system: nixpkgs.legacyPackages.${system}.nixfmt-tree);
 
-      checks =
-        forAllSystems (system: {
+      checks = forAllSystems (
+        system:
+        {
           pre-commit-check = mkPreCommit system;
           # Compile + (future) unit-test strom-run in isolation, so it can be
           # built via `nix build .#checks.<system>.strom-run` without running
           # the whole-flake `nix flake check`.
           strom-run = self.legacyPackages.${system}.scripts.strom-run;
-        })
-        // {
+        }
+        // nixpkgs.lib.optionalAttrs (system == "x86_64-linux") {
           # x86_64 only, like the games themselves: the assertion builds a
           # synthetic game wrapper through the real mkGame lib.
-          x86_64-linux.data-archive-closure =
+          data-archive-closure =
             nixpkgs.legacyPackages.x86_64-linux.callPackage ./test/data-archive-closure.nix
               {
                 mkGame = self.lib.mkGame {
@@ -80,12 +81,11 @@
           # Same shape, against a real recipe: drives bodycam through the
           # launcher's `.apply` path and asserts the onlineFix row and its
           # conditioning (evaluation only; no FOD, no wrapper build).
-          x86_64-linux.bodycam-onlinefix =
-            nixpkgs.legacyPackages.x86_64-linux.callPackage ./test/bodycam-onlinefix.nix
-              {
-                game = self.modules.x86_64-linux.bodycam;
-              };
-        };
+          bodycam-onlinefix = nixpkgs.legacyPackages.x86_64-linux.callPackage ./test/bodycam-onlinefix.nix {
+            game = self.modules.x86_64-linux.bodycam;
+          };
+        }
+      );
 
       devShells = forAllSystems (
         system:
