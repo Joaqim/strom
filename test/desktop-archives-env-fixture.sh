@@ -16,18 +16,18 @@ eval_archives() { # args: extra nixos config attr string
 }
 
 got=$(eval_archives 'programs.strom-desktop.enable = true;')
-[ "$got" = "/var/lib/steam/game-archives" ] && echo "A PASS: default $got" || { echo "A FAIL: got '$got'"; exit 1; }
+if [ "$got" = "/var/lib/steam/game-archives" ]; then echo "A PASS: default $got"; else echo "A FAIL: got '$got'"; exit 1; fi
 
 got=$(eval_archives 'programs.strom-desktop.enable = true; programs.strom-desktop.archivesDir = "/srv/strom/game-archives";')
-[ "$got" = "/srv/strom/game-archives" ] && echo "B PASS: option assignment relocates" || { echo "B FAIL: got '$got'"; exit 1; }
+if [ "$got" = "/srv/strom/game-archives" ]; then echo "B PASS: option assignment relocates"; else echo "B FAIL: got '$got'"; exit 1; fi
 
 got=$(eval_archives 'programs.strom-desktop.enable = true; environment.sessionVariables.STROM_ARCHIVES = "/srv/strom/game-archives";')
-[ "$got" = "/srv/strom/game-archives" ] && echo "C PASS: operator sessionVariables override wins" || { echo "C FAIL: got '$got'"; exit 1; }
+if [ "$got" = "/srv/strom/game-archives" ]; then echo "C PASS: operator sessionVariables override wins"; else echo "C FAIL: got '$got'"; exit 1; fi
 
 got=$(nix eval --impure --json --expr "
   let f = builtins.getFlake \"path:$repo\";
   in (import (f.inputs.nixpkgs.outPath + \"/nixos\") {
     configuration = { imports = [ f.nixosModules.strom-desktop ]; };
   }).config.environment.sessionVariables ? STROM_ARCHIVES" 2>&1)
-[ "$got" = "false" ] && echo "D PASS: disabled module sets nothing" || { echo "D FAIL: got '$got'"; exit 1; }
+if [ "$got" = "false" ]; then echo "D PASS: disabled module sets nothing"; else echo "D FAIL: got '$got'"; exit 1; fi
 echo "=== ALL ASSERTS PASS ==="
