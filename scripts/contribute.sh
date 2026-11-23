@@ -47,6 +47,8 @@ PATCH_BRANCHES=(
     "713bb2f patch-can-em-all"
     "dcf184b patch-tape-to-tape"
     "94970c0 patch-bodycam"
+    "8964117 patch-potato-please"
+    "d61852e patch-thank-goodness-youre-here"
 )
 
 # `rad patch update` without --base re-derives the base from the default
